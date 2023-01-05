@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "./api";
+
+package transaction_temporal_workflow.api;
+
+service Transaction {
+  rpc ProcessTransaction (ProcessTransactionRequest) returns (ProcessTransactionResponse) {}
+}
+
+message ProcessTransactionRequest {
+  string transaction_id = 1;
+  string idempotency_key = 2;
+}
+
+message ProcessTransactionResponse {
+  string message = 1;
+}
