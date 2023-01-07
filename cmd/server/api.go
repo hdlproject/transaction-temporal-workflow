@@ -8,6 +8,7 @@ import (
 
 	"transaction-temporal-workflow/api"
 	"transaction-temporal-workflow/cmd"
+	"transaction-temporal-workflow/model"
 )
 
 type transactionServer struct {
@@ -23,6 +24,35 @@ func NewTransactionServer() (api.TransactionServer, error) {
 
 	return &transactionServer{
 		c: c,
+	}, nil
+}
+
+func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.CreateTransactionRequest) (*api.CreateTransactionResponse, error) {
+	options := client.StartWorkflowOptions{
+		ID:        "transaction-workflow",
+		TaskQueue: cmd.TransactionTaskQueue,
+	}
+
+	transaction := model.Transaction{
+		TransactionId: req.TransactionId,
+		Amount:        int(req.Amount),
+		ProductCode:   req.ProductCode,
+		UserId:        req.UserId,
+	}
+	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transaction, req.IdempotencyKey)
+	if err != nil {
+		return nil, fmt.Errorf("execute workflow: %w", err)
+	}
+
+	err = we.Get(context.Background(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("get workflow result: %w", err)
+	}
+
+	printResults(we.GetID(), we.GetRunID())
+
+	return &api.CreateTransactionResponse{
+		Message: "success",
 	}, nil
 }
 

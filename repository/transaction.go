@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -30,39 +30,36 @@ func NewTransaction(redis *redis.Client, db *gorm.DB) Transaction {
 	}
 }
 
-func (i Transaction) GetTransaction(transactionId string) (model.Transaction, error) {
-	res, err := i.rh.JSONGet(transactionId, ".")
-	if err != nil {
-		return model.Transaction{}, err
-	}
+func (i Transaction) GetTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
+	result := i.db.First(&transaction, "transaction_id = ?", transactionId)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return model.Transaction{}, result.Error
+		}
 
-	var transaction model.Transaction
-	err = json.Unmarshal(res.([]byte), &transaction)
-	if err != nil {
-		return model.Transaction{}, err
+		return model.Transaction{}, fmt.Errorf("get transaction by transaction id: %w", result.Error)
 	}
 
 	return transaction, nil
 }
 
-func (i Transaction) CreateTransaction(transactionId string) error {
-	transaction := model.Transaction{
-		Id:     transactionId,
-		Status: model.TransactionStatusCreated,
+func (i Transaction) GetLastTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
+	result := i.db.Order("created_at DESC").First(&transaction, "transaction_id = ?", transactionId)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return model.Transaction{}, result.Error
+		}
+
+		return model.Transaction{}, fmt.Errorf("get transaction by transaction id: %w", result.Error)
 	}
 
-	_, err := i.rh.JSONSet(transactionId, ".", transaction)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return transaction, nil
 }
 
-func (i Transaction) UpdateTransactionStatus(transactionId string, transactionStatus model.TransactionStatus) error {
-	_, err := i.rh.JSONSet(transactionId, "$.status", transactionStatus)
-	if err != nil {
-		return err
+func (i Transaction) CreateTransaction(transaction model.Transaction) error {
+	result := i.db.Create(&transaction)
+	if result.Error != nil {
+		return fmt.Errorf("create transaction: %w", result.Error)
 	}
 
 	return nil

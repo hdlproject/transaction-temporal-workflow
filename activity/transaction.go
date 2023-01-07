@@ -2,7 +2,10 @@ package activity
 
 import (
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"time"
+
+	"gorm.io/gorm"
+
 	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/repository"
 )
@@ -27,6 +30,42 @@ func NewTransaction(transactionRepository repository.Transaction) Transaction {
 	}
 }
 
+func (i Transaction) CreateTransaction(transaction model.Transaction, idempotencyKey string) error {
+	isAllowed, err := i.transactionRepository.IsAllowed(idempotencyKey)
+	if err != nil {
+		return fmt.Errorf("is allowed: %w", err)
+	}
+	if !isAllowed {
+		return nil
+	}
+
+	_, err = i.transactionRepository.GetTransactionByTransactionId(transaction.TransactionId)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return fmt.Errorf("get transaction: %w", err)
+	}
+
+	if err == nil {
+		return fmt.Errorf("record already exists")
+	}
+
+	transaction = model.Transaction{
+		Id:            transaction.Id,
+		TransactionId: transaction.TransactionId,
+		Status:        model.TransactionStatusCreated,
+		Amount:        transaction.Amount,
+		ProductCode:   transaction.ProductCode,
+		UserId:        transaction.UserId,
+		CreatedAt:     time.Now(),
+	}
+
+	err = i.transactionRepository.CreateTransaction(transaction)
+	if err != nil {
+		return fmt.Errorf("create transaction: %w", err)
+	}
+
+	return nil
+}
+
 func (i Transaction) ProcessTransaction(transactionId, idempotencyKey string) error {
 	isAllowed, err := i.transactionRepository.IsAllowed(idempotencyKey)
 	if err != nil {
@@ -36,34 +75,33 @@ func (i Transaction) ProcessTransaction(transactionId, idempotencyKey string) er
 		return nil
 	}
 
-	transaction, err := i.transactionRepository.GetTransaction(transactionId)
-	if err != nil && err != redis.Nil {
+	transaction, err := i.transactionRepository.GetLastTransactionByTransactionId(transactionId)
+	if err != nil {
 		return fmt.Errorf("get transaction: %w", err)
-	}
-
-	if err != nil && err == redis.Nil {
-		err = i.transactionRepository.CreateTransaction(transactionId)
-		if err != nil {
-			return fmt.Errorf("create transaction: %w", err)
-		}
-
-		return nil
 	}
 
 	switch transaction.Status {
 	case model.TransactionStatusCreated:
-		return CreatedTransaction{i}.ProcessTransaction(transactionId)
+		return CreatedTransaction{i}.ProcessTransaction(transaction)
 	case model.TransactionStatusPending:
-		return PendingTransaction{i}.ProcessTransaction(transactionId)
+		return PendingTransaction{i}.ProcessTransaction(transaction)
 	}
 
 	return nil
 }
 
-func (i CreatedTransaction) ProcessTransaction(transactionId string) error {
-	return i.transactionRepository.UpdateTransactionStatus(transactionId, model.TransactionStatusPending)
+func (i CreatedTransaction) ProcessTransaction(transaction model.Transaction) error {
+	transaction.Id = 0
+	transaction.Status = model.TransactionStatusPending
+	transaction.CreatedAt = time.Now()
+
+	return i.transactionRepository.CreateTransaction(transaction)
 }
 
-func (i PendingTransaction) ProcessTransaction(transactionId string) error {
-	return i.transactionRepository.UpdateTransactionStatus(transactionId, model.TransactionStatusSuccess)
+func (i PendingTransaction) ProcessTransaction(transaction model.Transaction) error {
+	transaction.Id = 0
+	transaction.Status = model.TransactionStatusSuccess
+	transaction.CreatedAt = time.Now()
+
+	return i.transactionRepository.CreateTransaction(transaction)
 }

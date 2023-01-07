@@ -35,8 +35,8 @@ ifeq ($(package),api)
 	@sudo rm -rf $(TMP_DIR)
 endif
 
-.PHONY: migrate
-migrate:
+.PHONY: migrate-up
+migrate-up:
 	# TODO: move credential to .env
 	docker run -v $(MIGRATION_DIR):/migrations \
 		--network host \
@@ -44,3 +44,13 @@ migrate:
         	-path=/migrations/ \
         	-database postgres://app:app@localhost:5433/app?sslmode=disable \
         	up
+
+.PHONY: migrate-down
+migrate-down:
+	# TODO: move credential to .env
+	docker run -v $(MIGRATION_DIR):/migrations \
+		--network host \
+		migrate/migrate \
+        	-path=/migrations/ \
+        	-database postgres://app:app@localhost:5433/app?sslmode=disable \
+        	down -all
