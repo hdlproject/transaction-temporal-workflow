@@ -1,13 +1,15 @@
 CREATE TABLE IF NOT EXISTS product
 (
-    code VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    code  VARCHAR(50) PRIMARY KEY,
+    name  VARCHAR(100) NOT NULL,
+    price INTEGER      NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "user"
 (
-    id   VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    id      VARCHAR(50) PRIMARY KEY,
+    name    VARCHAR(100) NOT NULL,
+    balance INTEGER      NOT NULL default 0
 );
 
 CREATE TYPE transaction_status AS ENUM ('CREATED', 'PENDING', 'SUCCESS', 'FAILED');

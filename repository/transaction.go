@@ -31,7 +31,7 @@ func NewTransaction(redis *redis.Client, db *gorm.DB) Transaction {
 }
 
 func (i Transaction) GetTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
-	result := i.db.First(&transaction, "transaction_id = ?", transactionId)
+	result := i.db.Joins("Product").Joins("User").First(&transaction, "transaction_id = ?", transactionId)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return model.Transaction{}, result.Error
@@ -44,7 +44,7 @@ func (i Transaction) GetTransactionByTransactionId(transactionId string) (transa
 }
 
 func (i Transaction) GetLastTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
-	result := i.db.Order("created_at DESC").First(&transaction, "transaction_id = ?", transactionId)
+	result := i.db.Joins("Product").Joins("User").Order("created_at DESC").First(&transaction, "transaction_id = ?", transactionId)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return model.Transaction{}, result.Error
