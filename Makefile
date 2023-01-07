@@ -3,6 +3,7 @@ VERSION := v0.1.0
 DOCKERFILE := protoc.Dockerfile
 
 TMP_DIR := ./tmp
+MIGRATION_DIR := $(PWD)/migration
 
 DOCKER_IMAGE_ID := $(shell docker images -q $(IMAGE_NAME):$(VERSION))
 
@@ -33,3 +34,13 @@ ifeq ($(package),api)
 	@cp -r $(TMP_DIR)/api/* ./api 2>/dev/null || :
 	@sudo rm -rf $(TMP_DIR)
 endif
+
+.PHONY: migrate
+migrate:
+	# TODO: move credential to .env
+	docker run -v $(MIGRATION_DIR):/migrations \
+		--network host \
+		migrate/migrate \
+        	-path=/migrations/ \
+        	-database postgres://app:app@localhost:5433/app?sslmode=disable \
+        	up

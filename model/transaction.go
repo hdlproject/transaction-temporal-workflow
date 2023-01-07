@@ -1,11 +1,17 @@
 package model
 
+import "time"
+
 type (
 	TransactionStatus string
 
 	Transaction struct {
-		Id     string            `json:"id"`
-		Status TransactionStatus `json:"status"`
+		Id          string            `json:"id"`
+		Status      TransactionStatus `json:"status"`
+		Amount      int               `json:"amount"`
+		ProductCode string            `json:"product_code"`
+		UserId      string            `json:"user_id"`
+		CreatedAt   time.Time         `json:"created_at"`
 	}
 )
 

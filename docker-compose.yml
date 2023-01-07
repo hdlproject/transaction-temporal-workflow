@@ -77,7 +77,7 @@ services:
     ports:
       - 8080:8080
 
-  redis:
+  app-redis:
     container_name: app-redis
     image: redis/redis-stack:${REDIS_VERSION}
     command: redis-server --loadmodule /opt/redis-stack/lib/rejson.so --loadmodule /opt/redis-stack/lib/redisearch.so --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
@@ -87,6 +87,18 @@ services:
       - 6379:6379
     volumes:
       - cache:/data
+
+  app-postgresql:
+    container_name: app-postgresql
+    environment:
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRESQL_DB}
+    image: postgres:${POSTGRESQL_VERSION}
+    networks:
+      - temporal-network
+    ports:
+      - 5433:5432
 
 networks:
   temporal-network:

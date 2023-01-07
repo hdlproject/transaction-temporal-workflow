@@ -3,25 +3,30 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/nitishm/go-rejson/v4"
-	"time"
+	"gorm.io/gorm"
+
 	"transaction-temporal-workflow/model"
 )
 
 type Transaction struct {
 	redis *redis.Client
 	rh    *rejson.Handler
+
+	db *gorm.DB
 }
 
-func NewTransaction(redis *redis.Client) Transaction {
+func NewTransaction(redis *redis.Client, db *gorm.DB) Transaction {
 	rh := rejson.NewReJSONHandler()
 	rh.SetGoRedisClient(redis)
 
 	return Transaction{
 		redis: redis,
 		rh:    rh,
+		db:    db,
 	}
 }
 
@@ -45,8 +50,6 @@ func (i Transaction) CreateTransaction(transactionId string) error {
 		Id:     transactionId,
 		Status: model.TransactionStatusCreated,
 	}
-
-	fmt.Println(transaction)
 
 	_, err := i.rh.JSONSet(transactionId, ".", transaction)
 	if err != nil {

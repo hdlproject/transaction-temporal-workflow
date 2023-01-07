@@ -17,10 +17,12 @@ var (
 
 func init() {
 	redis := dependency.NewRedis()
+	db := dependency.NewPostgreSQL()
 
 	TransactionActivity = internalActivity.NewTransaction(
 		internalRepository.NewTransaction(
 			redis,
+			db,
 		),
 	)
 
