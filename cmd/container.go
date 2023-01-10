@@ -4,6 +4,7 @@ import (
 	internalActivity "transaction-temporal-workflow/activity"
 	"transaction-temporal-workflow/dependency"
 	internalRepository "transaction-temporal-workflow/repository"
+	"transaction-temporal-workflow/usecase/transaction"
 	internalWorkflow "transaction-temporal-workflow/workflow"
 )
 
@@ -15,15 +16,23 @@ var (
 	TransactionWorkflow internalWorkflow.Transaction
 )
 
+var (
+	TransactionUseCase transaction.UseCase
+)
+
 func init() {
 	redis := dependency.NewRedis()
 	db := dependency.NewPostgreSQL()
 
-	TransactionActivity = internalActivity.NewTransaction(
+	TransactionUseCase = transaction.NewUseCase(
 		internalRepository.NewTransaction(
 			redis,
 			db,
 		),
+	)
+
+	TransactionActivity = internalActivity.NewTransaction(
+		TransactionUseCase,
 	)
 
 	TransactionWorkflow = internalWorkflow.NewTransaction(

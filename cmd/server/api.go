@@ -9,11 +9,13 @@ import (
 	"transaction-temporal-workflow/api"
 	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
+	"transaction-temporal-workflow/usecase/transaction"
 )
 
 type transactionServer struct {
 	api.UnimplementedTransactionServer
-	c client.Client
+	c                  client.Client
+	transactionUseCase transaction.UseCase
 }
 
 func NewTransactionServer() (api.TransactionServer, error) {
@@ -28,18 +30,23 @@ func NewTransactionServer() (api.TransactionServer, error) {
 }
 
 func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.CreateTransactionRequest) (*api.CreateTransactionResponse, error) {
-	options := client.StartWorkflowOptions{
-		ID:        "transaction-workflow",
-		TaskQueue: cmd.TransactionTaskQueue,
-	}
-
-	transaction := model.Transaction{
+	transactionReq := model.Transaction{
 		TransactionId: req.TransactionId,
 		Amount:        int(req.Amount),
 		ProductCode:   req.ProductCode,
 		UserId:        req.UserId,
 	}
-	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transaction, req.IdempotencyKey)
+	err := cmd.TransactionUseCase.CreateTransaction(transactionReq, req.IdempotencyKey)
+	if err != nil {
+		return nil, fmt.Errorf("execute usecase: %w", err)
+	}
+
+	options := client.StartWorkflowOptions{
+		ID:        "transaction-workflow",
+		TaskQueue: cmd.TransactionTaskQueue,
+	}
+
+	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transactionReq, req.IdempotencyKey)
 	if err != nil {
 		return nil, fmt.Errorf("execute workflow: %w", err)
 	}
@@ -57,6 +64,11 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 }
 
 func (s *transactionServer) ProcessTransaction(ctx context.Context, req *api.ProcessTransactionRequest) (*api.ProcessTransactionResponse, error) {
+	err := cmd.TransactionUseCase.ProcessTransaction(req.TransactionId, req.IdempotencyKey)
+	if err != nil {
+		return nil, fmt.Errorf("execute usecase: %w", err)
+	}
+
 	options := client.StartWorkflowOptions{
 		ID:        "transaction-workflow",
 		TaskQueue: cmd.TransactionTaskQueue,
