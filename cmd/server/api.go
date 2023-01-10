@@ -9,13 +9,11 @@ import (
 	"transaction-temporal-workflow/api"
 	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/usecase/transaction"
 )
 
 type transactionServer struct {
 	api.UnimplementedTransactionServer
-	c                  client.Client
-	transactionUseCase transaction.UseCase
+	c client.Client
 }
 
 func NewTransactionServer() (api.TransactionServer, error) {
