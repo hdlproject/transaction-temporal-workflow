@@ -19,6 +19,10 @@ type (
 		User          User              `gorm:"foreignKey:UserId"`
 		CreatedAt     time.Time         `json:"created_at"`
 	}
+
+	TransactionQuery struct {
+		Transaction
+	}
 )
 
 const TransactionStatusCreated TransactionStatus = "CREATED"
@@ -28,6 +32,10 @@ const TransactionStatusFailed TransactionStatus = "FAILED"
 
 func (t *Transaction) TableName() string {
 	return "transaction"
+}
+
+func (t *TransactionQuery) TableName() string {
+	return "transaction_query"
 }
 
 func (t *Transaction) GetTotalPrice() (int, error) {

@@ -43,7 +43,7 @@ func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey
 		return nil
 	}
 
-	_, err = i.transactionQuery.GetTransactionByTransactionId(transaction.TransactionId)
+	_, err = i.transactionQuery.GetLastTransactionByTransactionId(transaction.TransactionId)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return fmt.Errorf("get transaction: %w", err)
 	}

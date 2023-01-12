@@ -21,21 +21,9 @@ func NewTransactionQuery(db *gorm.DB) TransactionQuery {
 	}
 }
 
-func (i TransactionQuery) GetTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
-	result := i.db.Joins("Product").Joins("User").First(&transaction, "transaction_id = ?", transactionId)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return model.Transaction{}, result.Error
-		}
-
-		return model.Transaction{}, fmt.Errorf("get transaction by transaction id: %w", result.Error)
-	}
-
-	return transaction, nil
-}
-
 func (i TransactionQuery) GetLastTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
-	result := i.db.Joins("Product").Joins("User").Order("created_at DESC").First(&transaction, "transaction_id = ?", transactionId)
+	var transactionQuery model.TransactionQuery
+	result := i.db.Joins("Product").Joins("User").First(&transactionQuery, "transaction_id = ?", transactionId)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return model.Transaction{}, result.Error
