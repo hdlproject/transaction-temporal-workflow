@@ -20,15 +20,21 @@ var (
 	TransactionUseCase transaction.UseCase
 )
 
+var (
+	TransactionRepository internalRepository.Transaction
+	IdempotencyRepository internalRepository.Idempotency
+)
+
 func init() {
 	redis := dependency.NewRedis()
 	db := dependency.NewPostgreSQL()
 
+	TransactionRepository = internalRepository.NewTransaction(db)
+	IdempotencyRepository = internalRepository.NewIdempotency(redis)
+
 	TransactionUseCase = transaction.NewUseCase(
-		internalRepository.NewTransaction(
-			redis,
-			db,
-		),
+		TransactionRepository,
+		IdempotencyRepository,
 	)
 
 	TransactionActivity = internalActivity.NewTransaction(

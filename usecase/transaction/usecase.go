@@ -12,7 +12,9 @@ import (
 
 type (
 	UseCase struct {
-		transactionRepository repository.Transaction
+		transactionCommand    repository.TransactionCommand
+		transactionQuery      repository.TransactionQuery
+		idempotencyRepository repository.Idempotency
 	}
 
 	CreatedTransaction struct {
@@ -24,14 +26,16 @@ type (
 	}
 )
 
-func NewUseCase(transactionRepository repository.Transaction) UseCase {
+func NewUseCase(transactionRepository repository.Transaction, idempotencyRepository repository.Idempotency) UseCase {
 	return UseCase{
-		transactionRepository: transactionRepository,
+		transactionCommand:    transactionRepository.Command,
+		transactionQuery:      transactionRepository.Query,
+		idempotencyRepository: idempotencyRepository,
 	}
 }
 
 func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey string) error {
-	isAllowed, err := i.transactionRepository.IsAllowed(idempotencyKey)
+	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("is allowed: %w", err)
 	}
@@ -39,7 +43,7 @@ func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey
 		return nil
 	}
 
-	_, err = i.transactionRepository.GetTransactionByTransactionId(transaction.TransactionId)
+	_, err = i.transactionQuery.GetTransactionByTransactionId(transaction.TransactionId)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return fmt.Errorf("get transaction: %w", err)
 	}
@@ -58,7 +62,7 @@ func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey
 		CreatedAt:     time.Now(),
 	}
 
-	err = i.transactionRepository.CreateTransaction(transaction)
+	err = i.transactionCommand.CreateTransaction(transaction)
 	if err != nil {
 		return fmt.Errorf("create transaction: %w", err)
 	}
@@ -67,7 +71,7 @@ func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey
 }
 
 func (i UseCase) ProcessTransaction(transactionId, idempotencyKey string) error {
-	isAllowed, err := i.transactionRepository.IsAllowed(idempotencyKey)
+	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("is allowed: %w", err)
 	}
@@ -75,7 +79,7 @@ func (i UseCase) ProcessTransaction(transactionId, idempotencyKey string) error 
 		return nil
 	}
 
-	transaction, err := i.transactionRepository.GetLastTransactionByTransactionId(transactionId)
+	transaction, err := i.transactionQuery.GetLastTransactionByTransactionId(transactionId)
 	if err != nil {
 		return fmt.Errorf("get transaction: %w", err)
 	}
@@ -95,7 +99,7 @@ func (i CreatedTransaction) ProcessTransaction(transaction model.Transaction) er
 	transaction.Status = model.TransactionStatusPending
 	transaction.CreatedAt = time.Now()
 
-	return i.transactionRepository.CreateTransaction(transaction)
+	return i.transactionCommand.CreateTransaction(transaction)
 }
 
 func (i PendingTransaction) ProcessTransaction(transaction model.Transaction) error {
@@ -103,5 +107,5 @@ func (i PendingTransaction) ProcessTransaction(transaction model.Transaction) er
 	transaction.Status = model.TransactionStatusSuccess
 	transaction.CreatedAt = time.Now()
 
-	return i.transactionRepository.CreateTransaction(transaction)
+	return i.transactionCommand.CreateTransaction(transaction)
 }
