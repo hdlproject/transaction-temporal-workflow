@@ -34,16 +34,11 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 		ProductCode:   req.ProductCode,
 		UserId:        req.UserId,
 	}
-	err := cmd.TransactionUseCase.CreateTransaction(transactionReq, req.IdempotencyKey)
-	if err != nil {
-		return nil, fmt.Errorf("execute usecase: %w", err)
-	}
 
 	options := client.StartWorkflowOptions{
 		ID:        "transaction-workflow",
 		TaskQueue: cmd.TransactionTaskQueue,
 	}
-
 	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transactionReq, req.IdempotencyKey)
 	if err != nil {
 		return nil, fmt.Errorf("execute workflow: %w", err)
@@ -62,11 +57,6 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 }
 
 func (s *transactionServer) ProcessTransaction(ctx context.Context, req *api.ProcessTransactionRequest) (*api.ProcessTransactionResponse, error) {
-	err := cmd.TransactionUseCase.ProcessTransaction(req.TransactionId, req.IdempotencyKey)
-	if err != nil {
-		return nil, fmt.Errorf("execute usecase: %w", err)
-	}
-
 	options := client.StartWorkflowOptions{
 		ID:        "transaction-workflow",
 		TaskQueue: cmd.TransactionTaskQueue,
