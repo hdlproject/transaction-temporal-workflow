@@ -1,11 +1,13 @@
-package main
+package transaction
 
 import (
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"transaction-temporal-workflow/api"
 )
 
