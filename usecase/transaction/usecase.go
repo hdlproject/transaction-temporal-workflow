@@ -1,11 +1,15 @@
 package transaction
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 
+	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/repository"
 )
@@ -15,6 +19,8 @@ type (
 		transactionCommand    repository.TransactionCommand
 		transactionQuery      repository.TransactionQuery
 		idempotencyRepository repository.Idempotency
+
+		rabbitMQ *amqp.Channel
 	}
 
 	CreatedTransaction struct {
@@ -26,15 +32,16 @@ type (
 	}
 )
 
-func NewUseCase(transactionRepository repository.Transaction, idempotencyRepository repository.Idempotency) UseCase {
+func NewUseCase(transactionRepository repository.Transaction, idempotencyRepository repository.Idempotency, rabbitMQ *amqp.Channel) UseCase {
 	return UseCase{
 		transactionCommand:    transactionRepository.Command,
 		transactionQuery:      transactionRepository.Query,
 		idempotencyRepository: idempotencyRepository,
+		rabbitMQ:              rabbitMQ,
 	}
 }
 
-func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey string) error {
+func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
 	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("is allowed: %w", err)
@@ -67,10 +74,29 @@ func (i UseCase) CreateTransaction(transaction model.Transaction, idempotencyKey
 		return fmt.Errorf("create transaction: %w", err)
 	}
 
+	transactionJson, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("json marshall: %w", err)
+	}
+
+	err = i.rabbitMQ.PublishWithContext(ctx,
+		cmd.TransactionExchangeName,
+		cmd.TransactionCreatedRoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        transactionJson,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("rabbitmq publish with context: %w", err)
+	}
+
 	return nil
 }
 
-func (i UseCase) ProcessTransaction(transactionId, idempotencyKey string) error {
+func (i UseCase) ProcessTransaction(ctx context.Context, transactionId, idempotencyKey string) error {
 	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("is allowed: %w", err)

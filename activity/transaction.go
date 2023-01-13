@@ -1,6 +1,7 @@
 package activity
 
 import (
+	"context"
 	"fmt"
 
 	"transaction-temporal-workflow/model"
@@ -19,8 +20,8 @@ func NewTransaction(transactionUseCase transaction.UseCase) Transaction {
 	}
 }
 
-func (i Transaction) CreateTransaction(transaction model.Transaction, idempotencyKey string) error {
-	err := i.transactionUseCase.CreateTransaction(transaction, idempotencyKey)
+func (i Transaction) CreateTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
+	err := i.transactionUseCase.CreateTransaction(ctx, transaction, idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("create transaction: %w", err)
 	}
@@ -28,8 +29,8 @@ func (i Transaction) CreateTransaction(transaction model.Transaction, idempotenc
 	return nil
 }
 
-func (i Transaction) ProcessTransaction(transactionId, idempotencyKey string) error {
-	err := i.transactionUseCase.ProcessTransaction(transactionId, idempotencyKey)
+func (i Transaction) ProcessTransaction(ctx context.Context, transactionId, idempotencyKey string) error {
+	err := i.transactionUseCase.ProcessTransaction(ctx, transactionId, idempotencyKey)
 	if err != nil {
 		return fmt.Errorf("process transaction: %w", err)
 	}
