@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS "user"
 (
     id      VARCHAR(50) PRIMARY KEY,
     name    VARCHAR(100) NOT NULL,
-    balance INTEGER      NOT NULL default 0
+    balance INTEGER      NOT NULL default 0,
+    CHECK (balance >= 0)
 );
 
 CREATE TYPE transaction_status AS ENUM ('CREATED', 'PENDING', 'SUCCESS', 'FAILED');
