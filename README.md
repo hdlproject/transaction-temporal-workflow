@@ -3,13 +3,19 @@
 ```shell
 $ docker-compose up
 ```
-### Run worker
+### Transaction service
+#### Run server
 ```shell
-$ go run cmd/worker/main.go
+$ go run cmd/server/transaction/*
 ```
-### Run server
+#### Run worker
 ```shell
-$ go run cmd/server/*
+$ go run cmd/worker/transaction/*
+```
+### User service
+#### Run message listener
+```shell
+$ go run cmd/pubsub/user/*
 ```
 ### Open temporal admin UI
 Open http://localhost:8080 in browser

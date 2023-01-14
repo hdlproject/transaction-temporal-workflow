@@ -9,6 +9,7 @@ import (
 	"transaction-temporal-workflow/api"
 	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
+	"transaction-temporal-workflow/usecase"
 )
 
 type transactionServer struct {
@@ -37,7 +38,7 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 
 	options := client.StartWorkflowOptions{
 		ID:        "transaction-workflow",
-		TaskQueue: cmd.TransactionTaskQueue,
+		TaskQueue: usecase.TransactionTaskQueue,
 	}
 	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transactionReq, req.IdempotencyKey)
 	if err != nil {
@@ -59,7 +60,7 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 func (s *transactionServer) ProcessTransaction(ctx context.Context, req *api.ProcessTransactionRequest) (*api.ProcessTransactionResponse, error) {
 	options := client.StartWorkflowOptions{
 		ID:        "transaction-workflow",
-		TaskQueue: cmd.TransactionTaskQueue,
+		TaskQueue: usecase.TransactionTaskQueue,
 	}
 	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, req.TransactionId, req.IdempotencyKey)
 	if err != nil {

@@ -9,8 +9,8 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	"transaction-temporal-workflow/activity"
-	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
+	"transaction-temporal-workflow/usecase"
 )
 
 type (
@@ -32,7 +32,7 @@ func (i User) ConsumeMessage(ctx workflow.Context, message amqp091.Delivery) err
 	ctx = workflow.WithActivityOptions(ctx, options)
 
 	switch message.RoutingKey {
-	case cmd.TransactionCreatedRoutingKey:
+	case usecase.TransactionCreatedRoutingKey:
 		var transaction model.Transaction
 		err := json.Unmarshal(message.Body, &transaction)
 		if err != nil {

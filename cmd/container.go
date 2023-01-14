@@ -36,18 +36,10 @@ var (
 	RabbitMQ *amqp.Channel
 )
 
-var (
-	TransactionExchangeName      = "transaction"
-	TransactionCreatedRoutingKey = "transaction.created"
-
-	UserServiceQueueName = "user_service"
-)
-
 func init() {
 	redis := dependency.NewRedis()
 	db := dependency.NewPostgreSQL()
 	RabbitMQ = dependency.NewRabbitMQ()
-	initRabbitMQ(RabbitMQ)
 
 	TransactionRepository = internalRepository.NewTransaction(db, RabbitMQ)
 	UserRepository = internalRepository.NewUser(db)
@@ -80,10 +72,4 @@ func init() {
 	UserWorkflow = internalWorkflow.NewUser(
 		UserActivity,
 	)
-}
-
-func initRabbitMQ(rabbitMQ *amqp.Channel) {
-	dependency.AddExchange(rabbitMQ, TransactionExchangeName)
-	dependency.AddQueue(rabbitMQ, UserServiceQueueName)
-	dependency.AddRouting(rabbitMQ, TransactionExchangeName, UserServiceQueueName, TransactionCreatedRoutingKey)
 }

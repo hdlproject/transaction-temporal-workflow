@@ -9,9 +9,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/repository"
+	"transaction-temporal-workflow/usecase"
 )
 
 type (
@@ -72,8 +72,8 @@ func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transa
 	}
 
 	err = i.rabbitMQ.PublishWithContext(ctx,
-		cmd.TransactionExchangeName,
-		cmd.TransactionCreatedRoutingKey,
+		usecase.TransactionExchangeName,
+		usecase.TransactionCreatedRoutingKey,
 		false,
 		false,
 		amqp.Publishing{

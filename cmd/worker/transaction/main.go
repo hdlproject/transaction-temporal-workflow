@@ -3,7 +3,11 @@ package main
 import (
 	"log"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"transaction-temporal-workflow/cmd"
+	"transaction-temporal-workflow/dependency"
+	"transaction-temporal-workflow/usecase"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -17,8 +21,10 @@ func main() {
 	}
 	defer c.Close()
 
+	initRabbitMQ(cmd.RabbitMQ)
+
 	// This worker hosts both Workflow and Activity functions
-	w := worker.New(c, cmd.TransactionTaskQueue, worker.Options{})
+	w := worker.New(c, usecase.TransactionTaskQueue, worker.Options{})
 	w.RegisterWorkflow(cmd.TransactionWorkflow.CreateTransaction)
 	w.RegisterWorkflow(cmd.TransactionWorkflow.ProcessTransaction)
 
@@ -30,4 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("unable to start Worker", err)
 	}
+}
+
+func initRabbitMQ(rabbitMQ *amqp.Channel) {
+	dependency.AddExchange(rabbitMQ, usecase.TransactionExchangeName)
 }
