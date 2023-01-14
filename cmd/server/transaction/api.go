@@ -40,7 +40,7 @@ func (s *transactionServer) CreateTransaction(ctx context.Context, req *api.Crea
 		ID:        "transaction-workflow",
 		TaskQueue: usecase.TransactionTaskQueue,
 	}
-	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transactionReq, req.IdempotencyKey)
+	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.CreateTransaction, transactionReq)
 	if err != nil {
 		return nil, fmt.Errorf("execute workflow: %w", err)
 	}
@@ -62,7 +62,7 @@ func (s *transactionServer) ProcessTransaction(ctx context.Context, req *api.Pro
 		ID:        "transaction-workflow",
 		TaskQueue: usecase.TransactionTaskQueue,
 	}
-	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, req.TransactionId, req.IdempotencyKey)
+	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, req.TransactionId)
 	if err != nil {
 		return nil, fmt.Errorf("execute workflow: %w", err)
 	}

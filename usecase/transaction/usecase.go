@@ -16,9 +16,8 @@ import (
 
 type (
 	UseCase struct {
-		transactionCommand    repository.TransactionCommand
-		transactionQuery      repository.TransactionQuery
-		idempotencyRepository repository.Idempotency
+		transactionCommand repository.TransactionCommand
+		transactionQuery   repository.TransactionQuery
 
 		rabbitMQ *amqp.Channel
 	}
@@ -32,12 +31,11 @@ type (
 	}
 )
 
-func NewUseCase(transactionRepository repository.Transaction, idempotencyRepository repository.Idempotency, rabbitMQ *amqp.Channel) UseCase {
+func NewUseCase(transactionRepository repository.Transaction, rabbitMQ *amqp.Channel) UseCase {
 	return UseCase{
-		transactionCommand:    transactionRepository.Command,
-		transactionQuery:      transactionRepository.Query,
-		idempotencyRepository: idempotencyRepository,
-		rabbitMQ:              rabbitMQ,
+		transactionCommand: transactionRepository.Command,
+		transactionQuery:   transactionRepository.Query,
+		rabbitMQ:           rabbitMQ,
 	}
 }
 

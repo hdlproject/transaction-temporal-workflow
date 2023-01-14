@@ -1,16 +1,13 @@
 package workflow
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/rabbitmq/amqp091-go"
 	"go.temporal.io/sdk/workflow"
 
 	"transaction-temporal-workflow/activity"
 	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/usecase"
 )
 
 type (
@@ -25,24 +22,15 @@ func NewUser(userActivity activity.User) User {
 	}
 }
 
-func (i User) ConsumeMessage(ctx workflow.Context, message amqp091.Delivery) error {
+func (i User) ProcessTransaction(ctx workflow.Context, transaction model.Transaction, idempotencyKey string) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	switch message.RoutingKey {
-	case usecase.TransactionCreatedRoutingKey:
-		var transaction model.Transaction
-		err := json.Unmarshal(message.Body, &transaction)
-		if err != nil {
-			return fmt.Errorf("json unmarshal: %w", err)
-		}
-
-		err = workflow.ExecuteActivity(ctx, i.userActivity.ProcessTransaction, transaction, transaction.TransactionId).Get(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("execute activity: %w", err)
-		}
+	err := workflow.ExecuteActivity(ctx, i.userActivity.ProcessTransaction, transaction, idempotencyKey).Get(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("execute activity: %w", err)
 	}
 
 	return nil

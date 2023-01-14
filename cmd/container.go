@@ -47,16 +47,15 @@ func init() {
 
 	TransactionUseCase = transaction.NewUseCase(
 		TransactionRepository,
-		IdempotencyRepository,
 		RabbitMQ,
+	)
+	IdempotencyUseCase = idempotency.NewUseCase(
+		IdempotencyRepository,
 	)
 	UserUseCase = user.NewUseCase(
 		IdempotencyUseCase,
 		UserRepository,
 		RabbitMQ,
-	)
-	IdempotencyUseCase = idempotency.NewUseCase(
-		IdempotencyRepository,
 	)
 
 	TransactionActivity = internalActivity.NewTransaction(

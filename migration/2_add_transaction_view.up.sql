@@ -1,6 +1,7 @@
 CREATE MATERIALIZED VIEW IF NOT EXISTS transaction_query AS
 SELECT *
-FROM (SELECT transaction_id,
+FROM (SELECT id,
+             transaction_id,
              status,
              amount,
              product_code,

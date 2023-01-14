@@ -17,6 +17,10 @@ $ go run cmd/worker/transaction/*
 ```shell
 $ go run cmd/pubsub/user/*
 ```
+#### Run worker
+```shell
+$ go run cmd/worker/user/*
+```
 ### Open temporal admin UI
 Open http://localhost:8080 in browser
 ### Open grpcui

@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"fmt"
 	"time"
 
 	"transaction-temporal-workflow/activity"
@@ -28,7 +29,10 @@ func (i Transaction) CreateTransaction(ctx workflow.Context, transaction model.T
 	ctx = workflow.WithActivityOptions(ctx, options)
 
 	err := workflow.ExecuteActivity(ctx, i.transactionActivity.CreateTransaction, transaction).Get(ctx, nil)
-	return err
+	if err != nil {
+		return fmt.Errorf("execute activity: %w", err)
+	}
+	return nil
 }
 
 func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId string) error {
@@ -38,5 +42,8 @@ func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId stri
 	ctx = workflow.WithActivityOptions(ctx, options)
 
 	err := workflow.ExecuteActivity(ctx, i.transactionActivity.ProcessTransaction, transactionId).Get(ctx, nil)
-	return err
+	if err != nil {
+		return fmt.Errorf("execute activity: %w", err)
+	}
+	return nil
 }

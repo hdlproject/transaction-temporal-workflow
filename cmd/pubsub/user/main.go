@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -10,6 +11,7 @@ import (
 
 	"transaction-temporal-workflow/cmd"
 	"transaction-temporal-workflow/dependency"
+	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/usecase"
 )
 
@@ -41,12 +43,25 @@ func main() {
 			ctx := context.Background()
 
 			options := client.StartWorkflowOptions{
-				ID:        "transaction-workflow",
+				ID:        "user-workflow",
 				TaskQueue: usecase.UserTaskQueue,
 			}
-			we, err := c.ExecuteWorkflow(ctx, options, cmd.UserWorkflow.ConsumeMessage, d)
-			if err != nil {
-				log.Printf("execute workflow: %v", err)
+
+			var we client.WorkflowRun
+			switch d.RoutingKey {
+			case usecase.TransactionCreatedRoutingKey:
+				var transaction model.Transaction
+				err := json.Unmarshal(d.Body, &transaction)
+				if err != nil {
+					log.Printf("json unmarshal: %v", err)
+					return
+				}
+
+				we, err = c.ExecuteWorkflow(ctx, options, cmd.UserWorkflow.ProcessTransaction, transaction, fmt.Sprintf("%s.%s", usecase.TransactionCreatedRoutingKey, transaction.TransactionId))
+				if err != nil {
+					log.Printf("execute workflow: %v", err)
+					return
+				}
 			}
 
 			err = we.Get(context.Background(), nil)
