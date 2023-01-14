@@ -41,16 +41,8 @@ func NewUseCase(transactionRepository repository.Transaction, idempotencyReposit
 	}
 }
 
-func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
-	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
-	if err != nil {
-		return fmt.Errorf("is allowed: %w", err)
-	}
-	if !isAllowed {
-		return nil
-	}
-
-	_, err = i.transactionQuery.GetLastTransactionByTransactionId(transaction.TransactionId)
+func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transaction) error {
+	_, err := i.transactionQuery.GetLastTransactionByTransactionId(transaction.TransactionId)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return fmt.Errorf("get transaction: %w", err)
 	}
@@ -96,15 +88,7 @@ func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transa
 	return nil
 }
 
-func (i UseCase) ProcessTransaction(ctx context.Context, transactionId, idempotencyKey string) error {
-	isAllowed, err := i.idempotencyRepository.IsAllowed(idempotencyKey)
-	if err != nil {
-		return fmt.Errorf("is allowed: %w", err)
-	}
-	if !isAllowed {
-		return nil
-	}
-
+func (i UseCase) ProcessTransaction(ctx context.Context, transactionId string) error {
 	transaction, err := i.transactionQuery.GetLastTransactionByTransactionId(transactionId)
 	if err != nil {
 		return fmt.Errorf("get transaction: %w", err)

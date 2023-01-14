@@ -20,8 +20,8 @@ func NewTransaction(transactionUseCase transaction.UseCase) Transaction {
 	}
 }
 
-func (i Transaction) CreateTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
-	err := i.transactionUseCase.CreateTransaction(ctx, transaction, idempotencyKey)
+func (i Transaction) CreateTransaction(ctx context.Context, transaction model.Transaction) error {
+	err := i.transactionUseCase.CreateTransaction(ctx, transaction)
 	if err != nil {
 		return fmt.Errorf("create transaction: %w", err)
 	}
@@ -29,8 +29,8 @@ func (i Transaction) CreateTransaction(ctx context.Context, transaction model.Tr
 	return nil
 }
 
-func (i Transaction) ProcessTransaction(ctx context.Context, transactionId, idempotencyKey string) error {
-	err := i.transactionUseCase.ProcessTransaction(ctx, transactionId, idempotencyKey)
+func (i Transaction) ProcessTransaction(ctx context.Context, transactionId string) error {
+	err := i.transactionUseCase.ProcessTransaction(ctx, transactionId)
 	if err != nil {
 		return fmt.Errorf("process transaction: %w", err)
 	}

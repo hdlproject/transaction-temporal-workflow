@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"transaction-temporal-workflow/api"
+	"transaction-temporal-workflow/cmd"
 )
 
 func main() {
@@ -17,12 +18,18 @@ func main() {
 		log.Fatalf("network listen: %v", err)
 	}
 
+	interceptor := NewInterceptor(cmd.IdempotencyUseCase)
+
 	server, err := NewTransactionServer()
 	if err != nil {
 		log.Fatalf("new transaction server: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptor.checkIdempotency,
+		),
+	)
 	api.RegisterTransactionServer(grpcServer, server)
 	reflection.Register(grpcServer)
 

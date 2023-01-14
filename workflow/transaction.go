@@ -21,22 +21,22 @@ func NewTransaction(transactionActivity activity.Transaction) Transaction {
 	}
 }
 
-func (i Transaction) CreateTransaction(ctx workflow.Context, transaction model.Transaction, idempotencyKey string) error {
+func (i Transaction) CreateTransaction(ctx workflow.Context, transaction model.Transaction) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	err := workflow.ExecuteActivity(ctx, i.transactionActivity.CreateTransaction, transaction, idempotencyKey).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, i.transactionActivity.CreateTransaction, transaction).Get(ctx, nil)
 	return err
 }
 
-func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId, idempotencyKey string) error {
+func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId string) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	err := workflow.ExecuteActivity(ctx, i.transactionActivity.ProcessTransaction, transactionId, idempotencyKey).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, i.transactionActivity.ProcessTransaction, transactionId).Get(ctx, nil)
 	return err
 }
