@@ -18,6 +18,8 @@ type (
 	UseCase struct {
 		transactionCommand repository.TransactionCommand
 		transactionQuery   repository.TransactionQuery
+		userRepository     repository.User
+		productRepository  repository.Product
 
 		rabbitMQ *amqp.Channel
 	}
@@ -31,10 +33,12 @@ type (
 	}
 )
 
-func NewUseCase(transactionRepository repository.Transaction, rabbitMQ *amqp.Channel) UseCase {
+func NewUseCase(transactionRepository repository.Transaction, userRepository repository.User, productRepository repository.Product, rabbitMQ *amqp.Channel) UseCase {
 	return UseCase{
 		transactionCommand: transactionRepository.Command,
 		transactionQuery:   transactionRepository.Query,
+		userRepository:     userRepository,
+		productRepository:  productRepository,
 		rabbitMQ:           rabbitMQ,
 	}
 }
@@ -49,13 +53,25 @@ func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transa
 		return fmt.Errorf("record already exists")
 	}
 
+	product, err := i.productRepository.GetProductByCode(transaction.ProductCode)
+	if err != nil {
+		return fmt.Errorf("get product by code: %w", err)
+	}
+
+	user, err := i.userRepository.GetUserById(transaction.UserId)
+	if err != nil {
+		return fmt.Errorf("get user by id: %w", err)
+	}
+
 	transaction = model.Transaction{
 		Id:            transaction.Id,
 		TransactionId: transaction.TransactionId,
 		Status:        model.TransactionStatusCreated,
 		Amount:        transaction.Amount,
 		ProductCode:   transaction.ProductCode,
+		Product:       product,
 		UserId:        transaction.UserId,
+		User:          user,
 		CreatedAt:     time.Now(),
 	}
 

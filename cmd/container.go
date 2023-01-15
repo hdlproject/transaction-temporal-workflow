@@ -31,6 +31,7 @@ var (
 var (
 	TransactionRepository internalRepository.Transaction
 	UserRepository        internalRepository.User
+	ProductRepository     internalRepository.Product
 	IdempotencyRepository internalRepository.Idempotency
 
 	RabbitMQ *amqp.Channel
@@ -43,10 +44,13 @@ func init() {
 
 	TransactionRepository = internalRepository.NewTransaction(db, RabbitMQ)
 	UserRepository = internalRepository.NewUser(db)
+	ProductRepository = internalRepository.NewProduct(db)
 	IdempotencyRepository = internalRepository.NewIdempotency(redis)
 
 	TransactionUseCase = transaction.NewUseCase(
 		TransactionRepository,
+		UserRepository,
+		ProductRepository,
 		RabbitMQ,
 	)
 	IdempotencyUseCase = idempotency.NewUseCase(
