@@ -35,13 +35,13 @@ func (i Transaction) CreateTransaction(ctx workflow.Context, transaction model.T
 	return nil
 }
 
-func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId string) error {
+func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId string, expectedStatus model.TransactionStatus) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	err := workflow.ExecuteActivity(ctx, i.transactionActivity.ProcessTransaction, transactionId).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, i.transactionActivity.ProcessTransaction, transactionId, expectedStatus).Get(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("execute activity: %w", err)
 	}

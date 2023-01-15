@@ -2,12 +2,14 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/repository"
+	"transaction-temporal-workflow/usecase"
 	"transaction-temporal-workflow/usecase/idempotency"
 )
 
@@ -29,15 +31,39 @@ func NewUseCase(idempotencyUseCase idempotency.UseCase, userRepository repositor
 	}
 }
 
-func (i UseCase) ProcessTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
-	isAllowed, err := i.idempotencyUseCase.IsAllowed(idempotencyKey)
+func (i UseCase) ReserveUserBalance(ctx context.Context, transaction model.Transaction) error {
+	var transactionStatus model.TransactionStatus
+	err := i.reserveUserBalance(ctx, transaction)
 	if err != nil {
-		return fmt.Errorf("is allowed: %w", err)
-	}
-	if !isAllowed {
-		return nil
+		transactionStatus = model.TransactionStatusFailed
+	} else {
+		transactionStatus = model.TransactionStatusPending
 	}
 
+	transaction.Status = transactionStatus
+	transactionJson, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("json marshal: %w", err)
+	}
+
+	err = i.rabbitMQ.PublishWithContext(ctx,
+		usecase.TransactionExchangeName,
+		usecase.TransactionReservedRoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        transactionJson,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("rabbitmq publish with context: %w", err)
+	}
+
+	return nil
+}
+
+func (i UseCase) reserveUserBalance(ctx context.Context, transaction model.Transaction) error {
 	totalPrice, err := transaction.GetTotalPrice()
 	if err != nil {
 		return fmt.Errorf("get total price: %w", err)

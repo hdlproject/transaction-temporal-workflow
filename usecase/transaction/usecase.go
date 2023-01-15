@@ -102,7 +102,7 @@ func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transa
 	return nil
 }
 
-func (i UseCase) ProcessTransaction(ctx context.Context, transactionId string) error {
+func (i UseCase) ProcessTransaction(ctx context.Context, transactionId string, expectedStatus model.TransactionStatus) error {
 	transaction, err := i.transactionQuery.GetLastTransactionByTransactionId(transactionId)
 	if err != nil {
 		return fmt.Errorf("get transaction: %w", err)
@@ -110,26 +110,52 @@ func (i UseCase) ProcessTransaction(ctx context.Context, transactionId string) e
 
 	switch transaction.Status {
 	case model.TransactionStatusCreated:
-		return CreatedTransaction{i}.ProcessTransaction(transaction)
+		return CreatedTransaction{i}.ProcessTransaction(transaction, expectedStatus)
 	case model.TransactionStatusPending:
-		return PendingTransaction{i}.ProcessTransaction(transaction)
+		return PendingTransaction{i}.ProcessTransaction(transaction, expectedStatus)
+	default:
+		return fmt.Errorf("transaction status %s is already final", transaction.Status)
+	}
+}
+
+func (i CreatedTransaction) ProcessTransaction(transaction model.Transaction, expectedStatus model.TransactionStatus) error {
+	var nextStatus model.TransactionStatus
+	switch expectedStatus {
+	case model.TransactionStatusPending, model.TransactionStatusFailed:
+		nextStatus = expectedStatus
+	default:
+		return fmt.Errorf("transction status transition from %s to %s is not allowed", transaction.Status, expectedStatus)
+	}
+
+	transaction.Id = 0
+	transaction.Status = nextStatus
+	transaction.CreatedAt = time.Now()
+
+	err := i.transactionCommand.CreateTransaction(transaction)
+	if err != nil {
+		return fmt.Errorf("create transaction %w", err)
 	}
 
 	return nil
 }
 
-func (i CreatedTransaction) ProcessTransaction(transaction model.Transaction) error {
+func (i PendingTransaction) ProcessTransaction(transaction model.Transaction, expectedStatus model.TransactionStatus) error {
+	var nextStatus model.TransactionStatus
+	switch expectedStatus {
+	case model.TransactionStatusSuccess, model.TransactionStatusFailed:
+		nextStatus = expectedStatus
+	default:
+		return fmt.Errorf("transction status transition from %s to %s is not allowed", transaction.Status, expectedStatus)
+	}
+
 	transaction.Id = 0
-	transaction.Status = model.TransactionStatusPending
+	transaction.Status = nextStatus
 	transaction.CreatedAt = time.Now()
 
-	return i.transactionCommand.CreateTransaction(transaction)
-}
+	err := i.transactionCommand.CreateTransaction(transaction)
+	if err != nil {
+		return fmt.Errorf("create transaction %w", err)
+	}
 
-func (i PendingTransaction) ProcessTransaction(transaction model.Transaction) error {
-	transaction.Id = 0
-	transaction.Status = model.TransactionStatusSuccess
-	transaction.CreatedAt = time.Now()
-
-	return i.transactionCommand.CreateTransaction(transaction)
+	return nil
 }

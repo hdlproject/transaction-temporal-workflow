@@ -22,8 +22,7 @@ func NewTransactionQuery(db *gorm.DB) TransactionQuery {
 }
 
 func (i TransactionQuery) GetLastTransactionByTransactionId(transactionId string) (transaction model.Transaction, err error) {
-	var transactionQuery model.TransactionQuery
-	result := i.db.Joins("Product").Joins("User").First(&transactionQuery, "transaction_id = ?", transactionId)
+	result := i.db.Joins("Product").Joins("User").Order("created_at DESC").First(&transaction, "transaction_id = ?", transactionId)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return model.Transaction{}, result.Error

@@ -19,7 +19,7 @@ func main() {
 	initRabbitMQ(cmd.RabbitMQ)
 
 	msgs, err := cmd.RabbitMQ.Consume(
-		usecase.UserServiceQueueName,
+		usecase.TransactionServiceQueueName,
 		"",
 		true,
 		false,
@@ -43,12 +43,13 @@ func main() {
 			ctx := context.Background()
 
 			options := client.StartWorkflowOptions{
-				ID:        "user-workflow",
-				TaskQueue: usecase.UserTaskQueue,
+				ID:        "transaction-workflow",
+				TaskQueue: usecase.TransactionTaskQueue,
 			}
+
 			var we client.WorkflowRun
 			switch d.RoutingKey {
-			case usecase.TransactionCreatedRoutingKey:
+			case usecase.TransactionReservedRoutingKey:
 				var transaction model.Transaction
 				err := json.Unmarshal(d.Body, &transaction)
 				if err != nil {
@@ -56,7 +57,7 @@ func main() {
 					return
 				}
 
-				idempotencyKey := fmt.Sprintf("%s.%s", usecase.TransactionCreatedRoutingKey, transaction.TransactionId)
+				idempotencyKey := fmt.Sprintf("%s.%s", usecase.TransactionReservedRoutingKey, transaction.TransactionId)
 				isAllowed, err := cmd.IdempotencyUseCase.IsAllowed(idempotencyKey)
 				if err != nil {
 					log.Printf("is allowed: %v", err)
@@ -67,7 +68,7 @@ func main() {
 					continue
 				}
 
-				we, err = c.ExecuteWorkflow(ctx, options, cmd.UserWorkflow.ReserveUserBalance, transaction)
+				we, err = c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, transaction.TransactionId, transaction.Status)
 				if err != nil {
 					log.Printf("execute workflow: %v", err)
 					return
@@ -96,6 +97,6 @@ func printResults(workflowID, runID string) {
 
 func initRabbitMQ(rabbitMQ *amqp.Channel) {
 	dependency.AddExchange(rabbitMQ, usecase.TransactionExchangeName)
-	dependency.AddQueue(rabbitMQ, usecase.UserServiceQueueName)
-	dependency.AddRouting(rabbitMQ, usecase.TransactionExchangeName, usecase.UserServiceQueueName, usecase.TransactionCreatedRoutingKey)
+	dependency.AddQueue(rabbitMQ, usecase.TransactionServiceQueueName)
+	dependency.AddRouting(rabbitMQ, usecase.TransactionExchangeName, usecase.TransactionServiceQueueName, usecase.TransactionReservedRoutingKey)
 }

@@ -22,13 +22,13 @@ func NewUser(userActivity activity.User) User {
 	}
 }
 
-func (i User) ProcessTransaction(ctx workflow.Context, transaction model.Transaction, idempotencyKey string) error {
+func (i User) ReserveUserBalance(ctx workflow.Context, transaction model.Transaction) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	err := workflow.ExecuteActivity(ctx, i.userActivity.ProcessTransaction, transaction, idempotencyKey).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, i.userActivity.ReserveUserBalance, transaction).Get(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("execute activity: %w", err)
 	}

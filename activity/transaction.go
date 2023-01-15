@@ -29,8 +29,8 @@ func (i Transaction) CreateTransaction(ctx context.Context, transaction model.Tr
 	return nil
 }
 
-func (i Transaction) ProcessTransaction(ctx context.Context, transactionId string) error {
-	err := i.transactionUseCase.ProcessTransaction(ctx, transactionId)
+func (i Transaction) ProcessTransaction(ctx context.Context, transactionId string, expectedStatus model.TransactionStatus) error {
+	err := i.transactionUseCase.ProcessTransaction(ctx, transactionId, expectedStatus)
 	if err != nil {
 		return fmt.Errorf("process transaction: %w", err)
 	}

@@ -8,6 +8,10 @@ $ docker-compose up
 ```shell
 $ go run cmd/server/transaction/*
 ```
+#### Run message listener
+```shell
+$ go run cmd/pubsub/transaction/*
+```
 #### Run worker
 ```shell
 $ go run cmd/worker/transaction/*

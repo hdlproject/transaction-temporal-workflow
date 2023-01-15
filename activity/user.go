@@ -20,10 +20,10 @@ func NewUser(userUseCase user.UseCase) User {
 	}
 }
 
-func (i User) ProcessTransaction(ctx context.Context, transaction model.Transaction, idempotencyKey string) error {
-	err := i.userUseCase.ProcessTransaction(ctx, transaction, idempotencyKey)
+func (i User) ReserveUserBalance(ctx context.Context, transaction model.Transaction) error {
+	err := i.userUseCase.ReserveUserBalance(ctx, transaction)
 	if err != nil {
-		return fmt.Errorf("process transaction: %w", err)
+		return fmt.Errorf("reserve user balance: %w", err)
 	}
 
 	return nil

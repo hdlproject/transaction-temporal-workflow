@@ -62,7 +62,7 @@ func (s *transactionServer) ProcessTransaction(ctx context.Context, req *api.Pro
 		ID:        "transaction-workflow",
 		TaskQueue: usecase.TransactionTaskQueue,
 	}
-	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, req.TransactionId)
+	we, err := s.c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, req.TransactionId, model.TransactionStatusSuccess)
 	if err != nil {
 		return nil, fmt.Errorf("execute workflow: %w", err)
 	}
