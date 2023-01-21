@@ -53,50 +53,20 @@ func (i UseCase) CreateTransaction(ctx context.Context, transaction model.Transa
 		return fmt.Errorf("record already exists")
 	}
 
-	product, err := i.productRepository.GetProductByCode(transaction.ProductCode)
-	if err != nil {
-		return fmt.Errorf("get product by code: %w", err)
-	}
-
-	user, err := i.userRepository.GetUserById(transaction.UserId)
-	if err != nil {
-		return fmt.Errorf("get user by id: %w", err)
-	}
-
 	transaction = model.Transaction{
 		Id:            transaction.Id,
 		TransactionId: transaction.TransactionId,
 		Status:        model.TransactionStatusCreated,
 		Amount:        transaction.Amount,
 		ProductCode:   transaction.ProductCode,
-		Product:       product,
 		UserId:        transaction.UserId,
-		User:          user,
 		CreatedAt:     time.Now(),
+		IsPublished:   false,
 	}
 
 	err = i.transactionCommand.CreateTransaction(transaction)
 	if err != nil {
 		return fmt.Errorf("create transaction: %w", err)
-	}
-
-	transactionJson, err := json.Marshal(transaction)
-	if err != nil {
-		return fmt.Errorf("json marshall: %w", err)
-	}
-
-	err = i.rabbitMQ.PublishWithContext(ctx,
-		usecase.TransactionExchangeName,
-		usecase.TransactionCreatedRoutingKey,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        transactionJson,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("rabbitmq publish with context: %w", err)
 	}
 
 	return nil
@@ -155,6 +125,41 @@ func (i PendingTransaction) ProcessTransaction(transaction model.Transaction, ex
 	err := i.transactionCommand.CreateTransaction(transaction)
 	if err != nil {
 		return fmt.Errorf("create transaction %w", err)
+	}
+
+	return nil
+}
+
+func (i UseCase) PublishTransaction(ctx context.Context) error {
+	transactions, err := i.transactionQuery.GetUnpublishedTransactions()
+	if err != nil {
+		return fmt.Errorf("get unpublished transactions: %w", err)
+	}
+
+	for _, transaction := range transactions {
+		transactionJson, err := json.Marshal(transaction)
+		if err != nil {
+			return fmt.Errorf("json marshall: %w", err)
+		}
+
+		err = i.rabbitMQ.PublishWithContext(ctx,
+			usecase.TransactionExchangeName,
+			usecase.TransactionCreatedRoutingKey,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        transactionJson,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("rabbitmq publish with context: %w", err)
+		}
+
+		err = i.transactionCommand.PublishTransaction(transaction.Id)
+		if err != nil {
+			return fmt.Errorf("publish transaction: %w", err)
+		}
 	}
 
 	return nil

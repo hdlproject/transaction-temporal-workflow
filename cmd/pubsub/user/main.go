@@ -35,6 +35,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("new temporal client: %w", err))
 	}
+	defer c.Close()
 
 	var forever chan struct{}
 

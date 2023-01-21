@@ -37,3 +37,12 @@ func (i Transaction) ProcessTransaction(ctx context.Context, transactionId strin
 
 	return nil
 }
+
+func (i Transaction) PublishTransaction(ctx context.Context) error {
+	err := i.transactionUseCase.PublishTransaction(ctx)
+	if err != nil {
+		return fmt.Errorf("publish transaction: %w", err)
+	}
+
+	return nil
+}

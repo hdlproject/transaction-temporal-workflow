@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS transaction
     product_code   VARCHAR(100)       NOT NULL,
     user_id        VARCHAR(100)       NOT NULL,
     created_at     timestamptz        NOT NULL,
+    is_published   BOOLEAN            NOT NULL default FALSE,
     CONSTRAINT fk_transaction_product FOREIGN KEY (product_code) REFERENCES product (code),
     CONSTRAINT fk_transaction_user FOREIGN KEY (user_id) REFERENCES "user" (id)
 );

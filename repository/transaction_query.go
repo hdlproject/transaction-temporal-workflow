@@ -33,3 +33,16 @@ func (i TransactionQuery) GetLastTransactionByTransactionId(transactionId string
 
 	return transaction, nil
 }
+
+func (i TransactionQuery) GetUnpublishedTransactions() (transactions []model.Transaction, err error) {
+	result := i.db.Joins("Product").Joins("User").Order("created_at ASC").Limit(10).Find(&transactions, "is_published = FALSE")
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, result.Error
+		}
+
+		return nil, fmt.Errorf("get unpublished transactions: %w", result.Error)
+	}
+
+	return transactions, nil
+}

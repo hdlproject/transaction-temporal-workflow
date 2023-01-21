@@ -18,6 +18,7 @@ type (
 		UserId        string            `json:"user_id" `
 		User          User              `gorm:"foreignKey:UserId"`
 		CreatedAt     time.Time         `json:"created_at"`
+		IsPublished   bool              `json:"is_published"`
 	}
 
 	TransactionQuery struct {

@@ -47,3 +47,16 @@ func (i Transaction) ProcessTransaction(ctx workflow.Context, transactionId stri
 	}
 	return nil
 }
+
+func (i Transaction) PublishTransaction(ctx workflow.Context) error {
+	options := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Second * 5,
+	}
+	ctx = workflow.WithActivityOptions(ctx, options)
+
+	err := workflow.ExecuteActivity(ctx, i.transactionActivity.PublishTransaction).Get(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("execute activity: %w", err)
+	}
+	return nil
+}

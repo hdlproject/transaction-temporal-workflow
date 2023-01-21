@@ -27,9 +27,11 @@ func main() {
 	w := worker.New(c, usecase.TransactionTaskQueue, worker.Options{})
 	w.RegisterWorkflow(cmd.TransactionWorkflow.CreateTransaction)
 	w.RegisterWorkflow(cmd.TransactionWorkflow.ProcessTransaction)
+	w.RegisterWorkflow(cmd.TransactionWorkflow.PublishTransaction)
 
 	w.RegisterActivity(cmd.TransactionActivity.CreateTransaction)
 	w.RegisterActivity(cmd.TransactionActivity.ProcessTransaction)
+	w.RegisterActivity(cmd.TransactionActivity.PublishTransaction)
 
 	// Start listening to the Task Queue
 	err = w.Run(worker.InterruptCh())
