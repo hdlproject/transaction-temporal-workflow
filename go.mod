@@ -3,6 +3,7 @@ module transaction-temporal-workflow
 go 1.18
 
 require (
+	github.com/opentracing/opentracing-go v1.1.0
 	github.com/rabbitmq/amqp091-go v1.5.0
 	go.temporal.io/sdk v1.17.0
 	gorm.io/driver/postgres v1.4.6

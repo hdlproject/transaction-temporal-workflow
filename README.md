@@ -12,6 +12,10 @@ $ go run cmd/server/transaction/*
 ```shell
 $ go run cmd/pubsub/transaction/*
 ```
+#### Run cron
+```shell
+$ go run cmd/cron/transaction/*
+```
 #### Run worker
 ```shell
 $ go run cmd/worker/transaction/*
@@ -20,6 +24,10 @@ $ go run cmd/worker/transaction/*
 #### Run message listener
 ```shell
 $ go run cmd/pubsub/user/*
+```
+#### Run cron
+```shell
+$ go run cmd/cron/user/*
 ```
 #### Run worker
 ```shell

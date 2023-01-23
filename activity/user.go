@@ -28,3 +28,12 @@ func (i User) ReserveUserBalance(ctx context.Context, transaction model.Transact
 
 	return nil
 }
+
+func (i User) PublishUserBalanceEvent(ctx context.Context) error {
+	err := i.userUseCase.PublishUserBalanceEvent(ctx)
+	if err != nil {
+		return fmt.Errorf("publish user balance event: %w", err)
+	}
+
+	return nil
+}

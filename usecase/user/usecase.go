@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"gorm.io/gorm"
 
 	"transaction-temporal-workflow/model"
 	"transaction-temporal-workflow/repository"
@@ -32,46 +33,48 @@ func NewUseCase(idempotencyUseCase idempotency.UseCase, userRepository repositor
 }
 
 func (i UseCase) ReserveUserBalance(ctx context.Context, transaction model.Transaction) error {
-	var transactionStatus model.TransactionStatus
-	err := i.reserveUserBalance(ctx, transaction)
+	err := i.userRepository.DeductUserBalance(transaction)
 	if err != nil {
-		transactionStatus = model.TransactionStatusFailed
-	} else {
-		transactionStatus = model.TransactionStatusPending
-	}
-
-	transaction.Status = transactionStatus
-	transactionJson, err := json.Marshal(transaction)
-	if err != nil {
-		return fmt.Errorf("json marshal: %w", err)
-	}
-
-	err = i.rabbitMQ.PublishWithContext(ctx,
-		usecase.TransactionExchangeName,
-		usecase.TransactionReservedRoutingKey,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        transactionJson,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("rabbitmq publish with context: %w", err)
+		return fmt.Errorf("deduct user balance: %w", err)
 	}
 
 	return nil
 }
 
-func (i UseCase) reserveUserBalance(ctx context.Context, transaction model.Transaction) error {
-	totalPrice, err := transaction.GetTotalPrice()
+func (i UseCase) PublishUserBalanceEvent(ctx context.Context) error {
+	userBalanceEvents, err := i.userRepository.GetUnpublishedUserBalanceEvents()
 	if err != nil {
-		return fmt.Errorf("get total price: %w", err)
+		if err != gorm.ErrRecordNotFound {
+			return fmt.Errorf("get unpublished user balance events: %w", err)
+		}
+
+		return nil
 	}
 
-	err = i.userRepository.DeductUserBalance(transaction.UserId, totalPrice)
-	if err != nil {
-		return fmt.Errorf("deduct user balance: %w", err)
+	for _, userBalanceEvent := range userBalanceEvents {
+		userBalanceEventJson, err := json.Marshal(userBalanceEvent)
+		if err != nil {
+			return fmt.Errorf("json marshal: %w", err)
+		}
+
+		err = i.rabbitMQ.PublishWithContext(ctx,
+			usecase.TransactionExchangeName,
+			usecase.TransactionReservedRoutingKey,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        userBalanceEventJson,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("rabbitmq publish with context: %w", err)
+		}
+
+		err = i.userRepository.PublishUserBalanceEvent(userBalanceEvent.Id)
+		if err != nil {
+			return fmt.Errorf("publish transaction: %w", err)
+		}
 	}
 
 	return nil

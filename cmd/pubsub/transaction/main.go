@@ -51,14 +51,14 @@ func main() {
 			var we client.WorkflowRun
 			switch d.RoutingKey {
 			case usecase.TransactionReservedRoutingKey:
-				var transaction model.Transaction
-				err := json.Unmarshal(d.Body, &transaction)
+				var userBalanceEvent model.UserBalanceEvent
+				err := json.Unmarshal(d.Body, &userBalanceEvent)
 				if err != nil {
 					log.Printf("json unmarshal: %v", err)
 					return
 				}
 
-				idempotencyKey := fmt.Sprintf("%s.%s", usecase.TransactionReservedRoutingKey, transaction.TransactionId)
+				idempotencyKey := fmt.Sprintf("%s.%s", usecase.TransactionReservedRoutingKey, userBalanceEvent.TransactionId)
 				isAllowed, err := cmd.IdempotencyUseCase.IsAllowed(idempotencyKey)
 				if err != nil {
 					log.Printf("is allowed: %v", err)
@@ -69,7 +69,7 @@ func main() {
 					continue
 				}
 
-				we, err = c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, transaction.TransactionId, transaction.Status)
+				we, err = c.ExecuteWorkflow(ctx, options, cmd.TransactionWorkflow.ProcessTransaction, userBalanceEvent.TransactionId, userBalanceEvent.TransactionStatus)
 				if err != nil {
 					log.Printf("execute workflow: %v", err)
 					return

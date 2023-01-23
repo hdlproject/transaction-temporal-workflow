@@ -133,7 +133,11 @@ func (i PendingTransaction) ProcessTransaction(transaction model.Transaction, ex
 func (i UseCase) PublishTransaction(ctx context.Context) error {
 	transactions, err := i.transactionQuery.GetUnpublishedTransactions()
 	if err != nil {
-		return fmt.Errorf("get unpublished transactions: %w", err)
+		if err != gorm.ErrRecordNotFound {
+			return fmt.Errorf("get unpublished transactions: %w", err)
+		}
+
+		return nil
 	}
 
 	for _, transaction := range transactions {

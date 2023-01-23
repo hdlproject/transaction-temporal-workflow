@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 
+	"github.com/opentracing/opentracing-go/log"
 	"gorm.io/gorm"
 
 	"transaction-temporal-workflow/model"
@@ -27,11 +28,33 @@ func (i User) GetUserById(id string) (user model.User, err error) {
 	return user, nil
 }
 
-func (i User) DeductUserBalance(userId string, amount int) error {
-	result := i.db.Exec(`UPDATE "user" SET balance = ? WHERE id = ?`, gorm.Expr("balance - ?", amount), userId)
-	if result.Error != nil {
-		return fmt.Errorf("deduct user balance: %w", result.Error)
+func (i User) DeductUserBalance(transaction model.Transaction) error {
+	totalPrice, err := transaction.GetTotalPrice()
+	if err != nil {
+		return fmt.Errorf("get total price: %w", err)
 	}
 
-	return nil
+	err = i.db.Transaction(func(tx *gorm.DB) error {
+		transactionStatus := model.TransactionStatusPending
+		result := tx.Exec(`UPDATE "user" SET balance = ? WHERE id = ?`, gorm.Expr("balance - ?", totalPrice), transaction.UserId)
+		if result.Error != nil {
+			transactionStatus = model.TransactionStatusFailed
+			log.Error(fmt.Errorf("deduct user balance: %w", result.Error))
+		}
+
+		userBalanceEvent := model.UserBalanceEvent{
+			UserId:            transaction.UserId,
+			Balance:           -1 * totalPrice,
+			TransactionId:     transaction.TransactionId,
+			TransactionStatus: transactionStatus,
+			IsPublished:       false,
+		}
+
+		if err := tx.Create(&userBalanceEvent).Error; err != nil {
+			return fmt.Errorf("create user balance event : %w", err)
+		}
+
+		return nil
+	})
+	return err
 }

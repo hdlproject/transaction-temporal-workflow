@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/opentracing/opentracing-go/log"
+
 	"transaction-temporal-workflow/activity"
 	"transaction-temporal-workflow/model"
 
@@ -56,7 +58,7 @@ func (i Transaction) PublishTransaction(ctx workflow.Context) error {
 
 	err := workflow.ExecuteActivity(ctx, i.transactionActivity.PublishTransaction).Get(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("execute activity: %w", err)
+		log.Error(fmt.Errorf("execute activity: %w", err))
 	}
 	return nil
 }

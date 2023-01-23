@@ -26,8 +26,10 @@ func main() {
 	// This worker hosts both Workflow and Activity functions
 	w := worker.New(c, usecase.UserTaskQueue, worker.Options{})
 	w.RegisterWorkflow(cmd.UserWorkflow.ReserveUserBalance)
+	w.RegisterWorkflow(cmd.UserWorkflow.PublishUserBalanceEvent)
 
 	w.RegisterActivity(cmd.UserActivity.ReserveUserBalance)
+	w.RegisterActivity(cmd.UserActivity.PublishUserBalanceEvent)
 
 	// Start listening to the Task Queue
 	err = w.Run(worker.InterruptCh())
