@@ -95,45 +95,24 @@ migrate-down:
         	-database postgres://app:app@localhost:5433/app?sslmode=disable \
         	down -all
 
-.PHONY: build-all
-build-all: $(TRANSACTION_SERVER_NAME)
+.PHONY: build-all-images
+build-all-images:
 	@echo "build all app images"
+	@make -C cmd/server/transaction build-image
+	@make -C cmd/worker/transaction build-image
+	@make -C cmd/worker/user build-image
+	@make -C cmd/pubsub/transaction build-image
+	@make -C cmd/pubsub/user build-image
+	@make -C cmd/cron/transaction build-image
+	@make -C cmd/cron/user build-image
 
-.PHONY: $(TRANSACTION_SERVER_NAME)
-$(TRANSACTION_SERVER_NAME):
-	@echo "build transaction server image"
-	@if [ ! -d $(TRANSACTION_SERVER_DIR)/build ]; then mkdir $(TRANSACTION_SERVER_DIR)/build; fi
-
-	@cp -r ./$(GO_APP_DOCKERFILE) $(TRANSACTION_SERVER_DIR)/build/
-	@sed -i 's#appname#$(TRANSACTION_SERVER_NAME)#g' $(TRANSACTION_SERVER_DIR)/build/$(GO_APP_DOCKERFILE)
-	@sed -i 's#appdir#$(TRANSACTION_SERVER_DIR)#g' $(TRANSACTION_SERVER_DIR)/build/$(GO_APP_DOCKERFILE)
-
-	@if [ "$(TRANSACTION_SERVER_IMAGE_ID)" = "" ]; then \
-		docker buildx build -f $(TRANSACTION_SERVER_DIR)/build/$(GO_APP_DOCKERFILE) -t $(TRANSACTION_SERVER_IMAGE_NAME) --output=type=docker .; \
-	fi;
-
-.PHONY: $(TRANSACTION_WORKER_NAME)
-$(TRANSACTION_WORKER_NAME):
-	@echo "build transaction worker image"
-	@if [ ! -d $(TRANSACTION_WORKER_DIR)/build ]; then mkdir $(TRANSACTION_WORKER_DIR)/build; fi
-
-	@cp -r ./$(GO_APP_DOCKERFILE) $(TRANSACTION_WORKER_DIR)/build/
-	@sed -i 's#appname#$(TRANSACTION_WORKER_NAME)#g' $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE)
-	@sed -i 's#appdir#$(TRANSACTION_WORKER_DIR)#g' $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE)
-
-	@if [ "$(TRANSACTION_WORKER_IMAGE_ID)" = "" ]; then \
-		docker buildx build -f $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE) -t $(TRANSACTION_WORKER_IMAGE_NAME) --output=type=docker .; \
-	fi;
-
-.PHONY: $(TRANSACTION_WORKER_NAME)
-$(TRANSACTION_WORKER_NAME):
-	@echo "build transaction worker image"
-	@if [ ! -d $(TRANSACTION_WORKER_DIR)/build ]; then mkdir $(TRANSACTION_WORKER_DIR)/build; fi
-
-	@cp -r ./$(GO_APP_DOCKERFILE) $(TRANSACTION_WORKER_DIR)/build/
-	@sed -i 's#appname#$(TRANSACTION_WORKER_NAME)#g' $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE)
-	@sed -i 's#appdir#$(TRANSACTION_WORKER_DIR)#g' $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE)
-
-	@if [ "$(TRANSACTION_WORKER_IMAGE_ID)" = "" ]; then \
-		docker buildx build -f $(TRANSACTION_WORKER_DIR)/build/$(GO_APP_DOCKERFILE) -t $(TRANSACTION_WORKER_IMAGE_NAME) --output=type=docker .; \
-	fi;
+.PHONY: remove-all-images
+remove-all-images:
+	@echo "remove all app images"
+	@make -C cmd/server/transaction remove-image
+	@make -C cmd/worker/transaction remove-image
+	@make -C cmd/worker/user remove-image
+	@make -C cmd/pubsub/transaction remove-image
+	@make -C cmd/pubsub/user remove-image
+	@make -C cmd/cron/transaction remove-image
+	@make -C cmd/cron/user remove-image

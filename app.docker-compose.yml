@@ -1,0 +1,38 @@
+version: "3.5"
+services:
+  transaction-server:
+    container_name: transaction-server
+    image: transaction-temporal-workflow/transaction-server:latest
+    network_mode: host
+#    ports:
+#      - 9090:8080
+
+  transaction-worker:
+    container_name: transaction-worker
+    image: transaction-temporal-workflow/transaction-worker:latest
+    network_mode: host
+
+  transaction-pubsub:
+    container_name: transaction-pubsub
+    image: transaction-temporal-workflow/transaction-pubsub:latest
+    network_mode: host
+
+  transaction-cron:
+    container_name: transaction-cron
+    image: transaction-temporal-workflow/transaction-cron:latest
+    network_mode: host
+
+  user-worker:
+    container_name: user-worker
+    image: transaction-temporal-workflow/user-worker:latest
+    network_mode: host
+
+  user-pubsub:
+    container_name: user-pubsub
+    image: transaction-temporal-workflow/user-pubsub:latest
+    network_mode: host
+
+  user-cron:
+    container_name: user-cron
+    image: transaction-temporal-workflow/user-cron:latest
+    network_mode: host
