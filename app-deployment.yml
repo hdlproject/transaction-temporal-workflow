@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: transaction-deployment
+  name: appname-deployment
   labels:
-    app: transaction
+    app: appname
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: transaction
+      app: appname
   template:
     metadata:
       labels:
-        app: transaction
+        app: appname
     spec:
       containers:
-        - name: nginx
-          image: nginx:1.14.2
+        - name: appname
+          image: appimagename
           ports:
-            - containerPort: 80
+            - containerPort: 9090

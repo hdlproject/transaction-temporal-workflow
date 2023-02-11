@@ -9,42 +9,6 @@ PROTOC_DOCKERFILE := protoc.Dockerfile
 PROTOC_IMAGE_NAME := transaction-temporal-workflow/api-protoc-go:v0.1.0
 PROTOC_IMAGE_ID := $(shell docker images -q $(PROTOC_IMAGE_NAME))
 
-GO_APP_DOCKERFILE := go-app.Dockerfile
-TRANSACTION_SERVER_IMAGE_NAME := transaction-temporal-workflow/transaction-server:v0.1.0
-TRANSACTION_SERVER_IMAGE_ID := $(shell docker images -q $(TRANSACTION_SERVER_IMAGE_NAME))
-TRANSACTION_SERVER_NAME := transaction-server
-TRANSACTION_SERVER_DIR := cmd/server/transaction
-
-TRANSACTION_WORKER_IMAGE_NAME := transaction-temporal-workflow/transaction-worker:v0.1.0
-TRANSACTION_WORKER_IMAGE_ID := $(shell docker images -q $(TRANSACTION_WORKER_IMAGE_NAME))
-TRANSACTION_WORKER_NAME := transaction-worker
-TRANSACTION_WORKER_DIR := cmd/worker/transaction
-
-TRANSACTION_PUBSUB_IMAGE_NAME := transaction-temporal-workflow/transaction-pubsub:v0.1.0
-TRANSACTION_PUBSUB_IMAGE_ID := $(shell docker images -q $(TRANSACTION_PUBSUB_IMAGE_NAME))
-TRANSACTION_PUBSUB_NAME := transaction-pubsub
-TRANSACTION_PUBSUB_DIR := cmd/pubsub/transaction
-
-TRANSACTION_CRON_IMAGE_NAME := transaction-temporal-workflow/transaction-cron:v0.1.0
-TRANSACTION_CRON_IMAGE_ID := $(shell docker images -q $(TRANSACTION_CRON_IMAGE_NAME))
-TRANSACTION_CRON_NAME := transaction-cron
-TRANSACTION_CRON_DIR := cmd/cron/transaction
-
-USER_WORKER_IMAGE_NAME := transaction-temporal-workflow/user-worker:v0.1.0
-USER_WORKER_IMAGE_ID := $(shell docker images -q $(USER_WORKER_IMAGE_NAME))
-USER_WORKER_NAME := user-worker
-USER_WORKER_DIR := cmd/worker/user
-
-USER_PUBSUB_IMAGE_NAME := transaction-temporal-workflow/user-pubsub:v0.1.0
-USER_PUBSUB_IMAGE_ID := $(shell docker images -q $(USER_PUBSUB_IMAGE_NAME))
-USER_PUBSUB_NAME := user-pubsub
-USER_PUBSUB_DIR := cmd/pubsub/user
-
-USER_CRON_IMAGE_NAME := transaction-temporal-workflow/user-cron:v0.1.0
-USER_CRON_IMAGE_ID := $(shell docker images -q $(USER_CRON_IMAGE_NAME))
-USER_CRON_NAME := user-cron
-USER_CRON_DIR := cmd/cron/user
-
 define api_protoc_go
 	docker run --rm -v ${PWD}:/generate \
 		$(PROTOC_IMAGE_NAME) \
@@ -116,3 +80,23 @@ remove-all-images:
 	@make -C cmd/pubsub/user remove-image
 	@make -C cmd/cron/transaction remove-image
 	@make -C cmd/cron/user remove-image
+
+.PHONY: deploy-argocd
+deploy-argocd:
+	@if [ "$(shell kubectl get namespaces | grep argocd)" = "" ]; then \
+		@kubectl create namespace argocd; \
+	fi;
+
+	@kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+#	@kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+#	@if [ "$(shell sudo netstat -tnlp | grep :8080)" = "" ]; then \
+#		@kubectl port-forward svc/argocd-server -n argocd 8080:443 >/dev/null 2>&1 & \
+#	fi;
+
+	@kubectl port-forward svc/argocd-server -n argocd 8080:443 >/dev/null 2>&1 & \
+
+	@argocd login localhost:8080 --username admin --password admin12345 --insecure
+
+#	@argocd cluster add -y $(kubectl config get-contexts -o name)
