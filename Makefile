@@ -22,18 +22,17 @@ define api_protoc_nodejs
 	docker run --rm -v ${PWD}:/generate \
 		$(PROTOC_IMAGE_NAME) \
 		-c \
-			"grpc_tools_node_protoc \
+			'grpc_tools_node_protoc \
+				--plugin="$$(which protoc-gen-es)" \
+				--es_out $(TMP_DIR) \
+				--es_opt target=ts \
+				--plugin="$$(which protoc-gen-connect-es)" \
+				--connect-es_out $(TMP_DIR) \
+				--connect-es_opt target=ts \
 				--plugin="$$(which protoc-gen-ts_proto)" \
-				--ts_proto_opt=esModuleInterop=true \
-				--ts_proto_opt=useDate=true \
-				--ts_proto_opt=forceLong=string \
-				--ts_proto_opt=useOptionals=true \
-				--ts_proto_opt=snakeToCamel=false \
-				--ts_proto_opt=nestJs=true \
-				--ts_proto_opt=addGrpcMetadata=true \
-				--ts_proto_opt=stringEnums=true \
 				--ts_proto_out=$(TMP_DIR) \
-				./api/*.proto"
+				--ts_proto_opt=outputServices=grpc-js,env=node,esModuleInterop=true \
+				./api/*.proto'
 endef
 
 .PHONY: $(PROTOC_DOCKERFILE)
@@ -52,7 +51,8 @@ ifeq ($(package),api)
 	$(api_protoc_go)
 	$(api_protoc_nodejs)
 
-	@cp -r $(TMP_DIR)/api/* ./api 2>/dev/null || :
+	@cp -r $(TMP_DIR)/api/*.go ./api 2>/dev/null || :
+	@cp -r $(TMP_DIR)/api/*.ts ./gateway-nodejs/api 2>/dev/null || :
 	@sudo rm -rf $(TMP_DIR)
 endif
 
