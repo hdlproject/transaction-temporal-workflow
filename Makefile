@@ -6,7 +6,7 @@ TRANSACTION_CRON_DIR := ./cmd/cron/transaction
 TRANSACTION_WORKER_DIR := ./cmd/worker/transaction
 
 PROTOC_DOCKERFILE := protoc.Dockerfile
-PROTOC_IMAGE_NAME := transaction-temporal-workflow/api-protoc-go:v0.1.0
+PROTOC_IMAGE_NAME := transaction-temporal-workflow/api-protoc-go:latest
 PROTOC_IMAGE_ID := $(shell docker images -q $(PROTOC_IMAGE_NAME))
 
 define api_protoc_go
@@ -16,6 +16,24 @@ define api_protoc_go
 		"protoc \
 			--go_out=plugins=grpc:$(TMP_DIR) \
 			./api/*.proto"
+endef
+
+define api_protoc_nodejs
+	docker run --rm -v ${PWD}:/generate \
+		$(PROTOC_IMAGE_NAME) \
+		-c \
+			"grpc_tools_node_protoc \
+				--plugin="$$(which protoc-gen-ts_proto)" \
+				--ts_proto_opt=esModuleInterop=true \
+				--ts_proto_opt=useDate=true \
+				--ts_proto_opt=forceLong=string \
+				--ts_proto_opt=useOptionals=true \
+				--ts_proto_opt=snakeToCamel=false \
+				--ts_proto_opt=nestJs=true \
+				--ts_proto_opt=addGrpcMetadata=true \
+				--ts_proto_opt=stringEnums=true \
+				--ts_proto_out=$(TMP_DIR) \
+				./api/*.proto"
 endef
 
 .PHONY: $(PROTOC_DOCKERFILE)
@@ -32,6 +50,7 @@ generate: $(TMP_DIR) $(PROTOC_DOCKERFILE)
 ifeq ($(package),api)
 	@echo "generating api"
 	$(api_protoc_go)
+	$(api_protoc_nodejs)
 
 	@cp -r $(TMP_DIR)/api/* ./api 2>/dev/null || :
 	@sudo rm -rf $(TMP_DIR)
