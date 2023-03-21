@@ -16,7 +16,9 @@
     "express": "^4.18.2",
     "express-winston": "^4.2.0",
     "winston": "^3.8.2",
-    "@grpc/grpc-js": "^1.8.12"
+    "@grpc/grpc-js": "^1.8.12",
+    "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
+    "@improbable-eng/grpc-web": "^0.15.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

@@ -31,7 +31,9 @@ define api_protoc_nodejs
 				--connect-es_opt target=ts \
 				--plugin="$$(which protoc-gen-ts_proto)" \
 				--ts_proto_out=$(TMP_DIR) \
-				--ts_proto_opt=outputServices=grpc-js,env=node,esModuleInterop=true \
+				--ts_proto_opt=outputServices=grpc-js \
+				--ts_proto_opt=env=node \
+				--ts_proto_opt=esModuleInterop=true \
 				./api/*.proto'
 endef
 

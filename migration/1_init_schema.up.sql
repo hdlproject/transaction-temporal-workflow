@@ -1,3 +1,5 @@
+CREATE TYPE transaction_status AS ENUM ('CREATED', 'PENDING', 'SUCCESS', 'FAILED');
+
 CREATE TABLE IF NOT EXISTS product
 (
     code  VARCHAR(50) PRIMARY KEY,
@@ -24,8 +26,6 @@ CREATE TABLE IF NOT EXISTS user_balance_event
     is_published       BOOLEAN            NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_user_balance_event_user FOREIGN KEY (user_id) REFERENCES "user" (id)
 );
-
-CREATE TYPE transaction_status AS ENUM ('CREATED', 'PENDING', 'SUCCESS', 'FAILED');
 
 CREATE TABLE IF NOT EXISTS transaction
 (
