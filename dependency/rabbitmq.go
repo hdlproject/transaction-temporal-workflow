@@ -1,12 +1,13 @@
 package dependency
 
 import (
+	"os"
+
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func NewRabbitMQ() *amqp.Channel {
-	// TODO: move credential to .env
-	conn, err := amqp.Dial("amqp://app:app@localhost:5672/")
+	conn, err := amqp.Dial(os.Getenv("RabbitMQURL"))
 	if err != nil {
 		panic("amqp dial: " + err.Error())
 	}

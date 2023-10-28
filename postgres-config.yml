@@ -1,0 +1,12 @@
+auth:
+  enablePostgresUser: true
+  postgresPassword: postgres
+  username: app
+  password: app
+  database: app
+primary:
+  persistence:
+    enabled: false
+    existingClaim: postgresql-pv-claim
+volumePermissions:
+  enabled: true

@@ -1,0 +1,10 @@
+auth:
+  enabled: false
+master:
+  persistence:
+    enabled: false
+    existingClaim: redis-pv-claim
+volumePermissions:
+  enabled: true
+replica:
+  replicaCount: 0

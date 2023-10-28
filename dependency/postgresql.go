@@ -1,19 +1,14 @@
 package dependency
 
 import (
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func NewPostgreSQL() *gorm.DB {
-	// TODO: move credential to .env
-	dsn := `host=localhost 
-			user=app 
-			password=app 
-			dbname=app 
-			port=5433 
-			sslmode=disable 
-			TimeZone=Asia/Jakarta`
+	dsn := os.Getenv("PostgreSQLDSN")
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

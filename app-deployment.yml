@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
         - name: appname
-          image: appimagename
+          image: docker.io/appimagename
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9090
