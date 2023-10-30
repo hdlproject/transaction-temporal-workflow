@@ -36,7 +36,12 @@ deploy-kube:
 	@sed -i'' -e 's#appimagename#$(APP_IMAGE_NAME)#g' ./build/service.yml
 
 	@chmod +x ../../../script/convert-dotenv-to-kube-env.sh && \
-		../../../script/convert-dotenv-to-kube-env.sh .env ./build/deployment.yml
+		../../../script/convert-dotenv-to-kube-env.sh .kubernetes.env ./build/deployment.yml
+
+	@kubectl delete --ignore-not-found=true -f ./build/deployment.yml
+	@kubectl delete --ignore-not-found=true -f ./build/service.yml
+
+	@minikube image rm $(APP_IMAGE_NAME)
 
 	@minikube image load $(APP_IMAGE_NAME)
 
@@ -44,7 +49,7 @@ deploy-kube:
 	@kubectl apply -f ./build/service.yml
 
 .PHONY: deploy-kube-dependency
-deploy-kube-dependency: deploy-kube-postgres deploy-kube-redis
+deploy-kube-dependency: deploy-kube-postgres deploy-kube-redis deploy-kube-rabbitmq
 
 .PHONY: deploy-kube-postgres
 deploy-kube-postgres:
@@ -64,6 +69,10 @@ deploy-kube-redis:
 	@helm upgrade --install redis bitnami/redis -f ./redis-config.yml --output=json | \
 		jq -r "[.name, .info.description] | @sh" | xargs printf "%s %s\n"
 
-.PHONY: convert-dotenv-to-kube-env
-convert-dotenv-to-kube-env:
-	@chmod +x ./convert-dotenv-to-kube-env.sh && ./convert-dotenv-to-kube-env.sh
+.PHONY: deploy-kube-rabbitmq
+deploy-kube-rabbitmq:
+	@echo "deploy rabbitmq on kubernetes"
+
+	@helm repo add --force-update bitnami https://charts.bitnami.com/bitnami
+	@helm upgrade --install rabbitmq bitnami/rabbitmq -f ./rabbitmq-config.yml --output=json | \
+		jq -r "[.name, .info.description] | @sh" | xargs printf "%s %s\n"

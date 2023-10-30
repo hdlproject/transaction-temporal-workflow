@@ -11,12 +11,8 @@ build-image:
 	@sed -i'' -e 's#appname#$(APP_NAME)#g' ./build/Dockerfile
 	@sed -i'' -e 's#appdir#$(APP_DIR)#g' ./build/Dockerfile
 
-	@if [ "$(APP_IMAGE_ID)" = "" ]; then \
-		docker buildx build -f ./build/Dockerfile -t $(APP_IMAGE_NAME) --output=type=docker ../../..; \
-	fi;
+	@docker buildx build -f ./build/Dockerfile -t $(APP_IMAGE_NAME) --output=type=docker ../../..
 
 .PHONY: remove-image
 remove-image:
-	@if [ "$(APP_IMAGE_ID)" != "" ]; then \
-		docker image rm $(APP_IMAGE_ID) --force; \
-	fi;
+	@docker image rm $(APP_IMAGE_ID) --force

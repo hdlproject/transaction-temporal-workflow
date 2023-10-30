@@ -26,7 +26,7 @@ remove-image-all:
 	@make -C cmd/cron/user remove-image
 
 .PHONY: deploy-kube-all
-deploy-kube-all: deploy-kube-dependency
+deploy-kube-all:
 	@echo "deploy all app to kubernetes"
 	@make -C cmd/server/transaction deploy-kube
 #	@make -C cmd/worker/transaction build-image
