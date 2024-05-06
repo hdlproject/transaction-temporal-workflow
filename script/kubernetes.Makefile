@@ -76,3 +76,14 @@ deploy-kube-rabbitmq:
 	@helm repo add --force-update bitnami https://charts.bitnami.com/bitnami
 	@helm upgrade --install rabbitmq bitnami/rabbitmq -f ./rabbitmq-config.yml --output=json | \
 		jq -r "[.name, .info.description] | @sh" | xargs printf "%s %s\n"
+
+.PHONY: deploy-kube-temporal
+deploy-kube-temporal:
+	@echo "deploy temporal on kubernetes"
+
+	@cd ./thirdparty/temporal/helm-charts
+	@helm dependencies update
+
+	@helm repo add --force-update bitnami https://charts.bitnami.com/bitnami
+	@helm upgrade --install rabbitmq bitnami/rabbitmq -f ./rabbitmq-config.yml --output=json | \
+		jq -r "[.name, .info.description] | @sh" | xargs printf "%s %s\n"
