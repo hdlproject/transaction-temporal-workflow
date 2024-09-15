@@ -17,19 +17,19 @@ define api_protoc_nodejs
 	docker run --rm -v ${PWD}:/generate \
 		$(PROTOC_IMAGE_NAME) \
 		-c \
-			'grpc_tools_node_protoc \
-				--plugin="$$(which protoc-gen-es)" \
-				--es_out $(TMP_DIR) \
-				--es_opt target=ts \
-				--plugin="$$(which protoc-gen-connect-es)" \
-				--connect-es_out $(TMP_DIR) \
-				--connect-es_opt target=ts \
-				--plugin="$$(which protoc-gen-ts_proto)" \
-				--ts_proto_out=$(TMP_DIR) \
-				--ts_proto_opt=outputServices=grpc-js \
-				--ts_proto_opt=env=node \
-				--ts_proto_opt=esModuleInterop=true \
-				./api/*.proto'
+		'grpc_tools_node_protoc \
+			--plugin="$$(which protoc-gen-es)" \
+			--es_out $(TMP_DIR) \
+			--es_opt target=ts \
+			--plugin="$$(which protoc-gen-connect-es)" \
+			--connect-es_out $(TMP_DIR) \
+			--connect-es_opt target=ts \
+			--plugin="$$(which protoc-gen-ts_proto)" \
+			--ts_proto_out=$(TMP_DIR) \
+			--ts_proto_opt=outputServices=grpc-js \
+			--ts_proto_opt=env=node \
+			--ts_proto_opt=esModuleInterop=true \
+			./api/*.proto'
 endef
 
 .PHONY: $(PROTOC_DOCKERFILE)

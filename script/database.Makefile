@@ -5,7 +5,7 @@ MIGRATION_DIR := $(PWD)/migration
 migrate-up:
 	@echo "migrate up database"
 	# TODO: move credential to .env
-	docker run -v $(MIGRATION_DIR):/migrations \
+	@docker run -v $(MIGRATION_DIR):/migrations \
 		--network host \
 		migrate/migrate \
         	-path=/migrations/ \
@@ -16,7 +16,7 @@ migrate-up:
 migrate-down:
 	@echo "migrate down database"
 	# TODO: move credential to .env
-	docker run -v $(MIGRATION_DIR):/migrations \
+	@docker run -v $(MIGRATION_DIR):/migrations \
 		--network host \
 		migrate/migrate \
         	-path=/migrations/ \

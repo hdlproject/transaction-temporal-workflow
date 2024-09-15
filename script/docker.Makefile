@@ -7,7 +7,7 @@ build-image:
 	@echo "build $(APP_NAME)"
 	@if [ ! -d ./build ]; then mkdir ./build; fi
 
-	@cp -r ../../../$(GO_APP_DOCKERFILE) ./build/Dockerfile
+	@cp -r ../../../script/$(GO_APP_DOCKERFILE) ./build/Dockerfile
 	@sed -i'' -e 's#appname#$(APP_NAME)#g' ./build/Dockerfile
 	@sed -i'' -e 's#appdir#$(APP_DIR)#g' ./build/Dockerfile
 

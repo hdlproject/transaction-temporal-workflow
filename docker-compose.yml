@@ -1,6 +1,6 @@
 version: "3.5"
 services:
-  elasticsearch:
+  temporal-elasticsearch:
     container_name: temporal-elasticsearch
     environment:
       - cluster.routing.allocation.disk.threshold_enabled=true
@@ -16,7 +16,7 @@ services:
     expose:
       - 9200
 
-  postgresql:
+  temporal-postgresql:
     container_name: temporal-postgresql
     environment:
       POSTGRES_PASSWORD: temporal
@@ -30,17 +30,17 @@ services:
   temporal:
     container_name: temporal
     depends_on:
-      - postgresql
-      - elasticsearch
+      - temporal-postgresql
+      - temporal-elasticsearch
     environment:
       - DB=postgresql
       - DB_PORT=5432
       - POSTGRES_USER=temporal
       - POSTGRES_PWD=temporal
-      - POSTGRES_SEEDS=postgresql
+      - POSTGRES_SEEDS=temporal-postgresql
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
       - ENABLE_ES=true
-      - ES_SEEDS=elasticsearch
+      - ES_SEEDS=temporal-elasticsearch
       - ES_VERSION=v7
     image: temporalio/auto-setup:${TEMPORAL_VERSION}
     networks:
@@ -50,7 +50,7 @@ services:
     labels:
       kompose.volume.type: configMap
     volumes:
-      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+      - ./script/dynamicconfig:/etc/temporal/config/dynamicconfig
 
   temporal-admin-tools:
     container_name: temporal-admin-tools

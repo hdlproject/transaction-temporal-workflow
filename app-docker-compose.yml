@@ -4,35 +4,47 @@ services:
     container_name: transaction-server
     image: transaction-temporal-workflow/transaction-server:latest
     network_mode: host
-#    ports:
-#      - 9090:8080
+    env_file:
+      - cmd/server/transaction/.env
 
   transaction-worker:
     container_name: transaction-worker
     image: transaction-temporal-workflow/transaction-worker:latest
     network_mode: host
+    env_file:
+      - cmd/worker/transaction/.env
 
   transaction-pubsub:
     container_name: transaction-pubsub
     image: transaction-temporal-workflow/transaction-pubsub:latest
     network_mode: host
+    env_file:
+      - cmd/pubsub/transaction/.env
 
   transaction-cron:
     container_name: transaction-cron
     image: transaction-temporal-workflow/transaction-cron:latest
     network_mode: host
+    env_file:
+      - cmd/cron/transaction/.env
 
   user-worker:
     container_name: user-worker
     image: transaction-temporal-workflow/user-worker:latest
     network_mode: host
+    env_file:
+      - cmd/worker/user/.env
 
   user-pubsub:
     container_name: user-pubsub
     image: transaction-temporal-workflow/user-pubsub:latest
     network_mode: host
+    env_file:
+      - cmd/pubsub/user/.env
 
   user-cron:
     container_name: user-cron
     image: transaction-temporal-workflow/user-cron:latest
     network_mode: host
+    env_file:
+      - cmd/cron/user/.env
