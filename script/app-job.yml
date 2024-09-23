@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: appname-job
+  labels:
+    app: appname
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: appname
+          image: docker.io/appimagename
+          imagePullPolicy: IfNotPresent

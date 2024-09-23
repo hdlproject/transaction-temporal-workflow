@@ -8,7 +8,7 @@ RUN apt update \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash -  \
     && apt install -y nodejs
 
-COPY go.mod go.sum ./
+COPY ../go.mod ../go.sum ./
 
 RUN go install \
     github.com/golang/protobuf/protoc-gen-go

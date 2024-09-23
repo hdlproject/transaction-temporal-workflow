@@ -1,0 +1,38 @@
+server:
+  config:
+    persistence:
+      default:
+        driver: sql
+        sql:
+          driver: postgres
+          host: postgresql
+          port: 5432
+          database: temporal
+          user: postgres
+          password: postgres
+      visibility:
+        driver: sql
+        sql:
+          driver: postgres
+          host: postgresql
+          port: 5432
+          database: temporal_visibility
+          user: postgres
+          password: postgres
+cassandra:
+  enabled: false
+mysql:
+  enabled: false
+postgresql:
+  enabled: true
+prometheus:
+  enabled: false
+grafana:
+  enabled: false
+elasticsearch:
+  enabled: false
+schema:
+  setup:
+    enabled: true
+  update:
+    enabled: true

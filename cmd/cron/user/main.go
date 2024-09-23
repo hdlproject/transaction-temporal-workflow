@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"go.temporal.io/sdk/client"
 
@@ -12,7 +13,9 @@ import (
 )
 
 func main() {
-	c, err := client.NewClient(client.Options{})
+	c, err := client.NewClient(client.Options{
+		HostPort: os.Getenv("TemporalAddress"),
+	})
 	if err != nil {
 		panic(fmt.Errorf("new temporal client: %w", err))
 	}

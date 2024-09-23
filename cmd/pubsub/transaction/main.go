@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.temporal.io/sdk/client"
@@ -31,7 +32,9 @@ func main() {
 		panic(fmt.Sprintf("rabbitmq consume: %v", err))
 	}
 
-	c, err := client.NewClient(client.Options{})
+	c, err := client.NewClient(client.Options{
+		HostPort: os.Getenv("TemporalAddress"),
+	})
 	if err != nil {
 		panic(fmt.Errorf("new temporal client: %w", err))
 	}

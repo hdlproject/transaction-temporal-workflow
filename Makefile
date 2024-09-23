@@ -29,9 +29,9 @@ remove-image-all:
 deploy-kube-all:
 	@echo "deploy all app to kubernetes"
 	@make -C cmd/server/transaction deploy-kube
-	@make -C cmd/worker/transaction build-image
-	@make -C cmd/pubsub/transaction build-image
-	@make -C cmd/cron/transaction build-image
-	@make -C cmd/worker/user build-image
-	@make -C cmd/pubsub/user build-image
-	@make -C cmd/cron/user build-image
+	@make -C cmd/worker/transaction deploy-kube
+	@make -C cmd/pubsub/transaction deploy-kube
+	@make -C cmd/cron/transaction deploy-kube
+	@make -C cmd/worker/user deploy-kube
+	@make -C cmd/pubsub/user deploy-kube
+	@make -C cmd/cron/user deploy-kube

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"go.temporal.io/sdk/client"
 
@@ -18,7 +19,9 @@ type transactionServer struct {
 }
 
 func NewTransactionServer() (api.TransactionServer, error) {
-	c, err := client.NewClient(client.Options{})
+	c, err := client.NewClient(client.Options{
+		HostPort: os.Getenv("TemporalAddress"),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("new temporal client: %w", err)
 	}

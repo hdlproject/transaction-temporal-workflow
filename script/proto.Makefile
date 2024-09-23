@@ -1,5 +1,5 @@
 TMP_DIR := ./tmp
-PROTOC_DOCKERFILE := protoc.Dockerfile
+PROTOC_DOCKERFILE := ./script/protoc.Dockerfile
 PROTOC_IMAGE_NAME := transaction-temporal-workflow/api-protoc-go:latest
 PROTOC_IMAGE_ID := $(shell docker images -q $(PROTOC_IMAGE_NAME))
 

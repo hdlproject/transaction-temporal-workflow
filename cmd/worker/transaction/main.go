@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
@@ -15,7 +16,9 @@ import (
 
 func main() {
 	// Create the client object just once per process
-	c, err := client.NewClient(client.Options{})
+	c, err := client.NewClient(client.Options{
+		HostPort: os.Getenv("TemporalAddress"),
+	})
 	if err != nil {
 		log.Fatalln("unable to create Temporal client", err)
 	}
