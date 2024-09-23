@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/usecase/user"
+	"temporalio-poc/model"
+	"temporalio-poc/usecase/user"
 )
 
 type (

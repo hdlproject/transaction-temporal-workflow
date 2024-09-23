@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/model"
+	"temporalio-poc/model"
 )
 
 type Product struct {

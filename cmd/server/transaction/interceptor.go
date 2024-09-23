@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	"transaction-temporal-workflow/api"
-	"transaction-temporal-workflow/usecase/idempotency"
+	"temporalio-poc/api"
+	"temporalio-poc/usecase/idempotency"
 )
 
 type interceptor struct {

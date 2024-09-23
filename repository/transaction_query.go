@@ -6,7 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/model"
+	"temporalio-poc/model"
 )
 
 type TransactionQuery struct {

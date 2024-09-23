@@ -7,10 +7,10 @@ import (
 
 	"go.temporal.io/sdk/client"
 
-	"transaction-temporal-workflow/api"
-	"transaction-temporal-workflow/cmd"
-	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/usecase"
+	"temporalio-poc/api"
+	"temporalio-poc/cmd"
+	"temporalio-poc/model"
+	"temporalio-poc/usecase"
 )
 
 type transactionServer struct {

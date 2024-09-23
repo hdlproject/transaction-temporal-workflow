@@ -6,7 +6,7 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/model"
+	"temporalio-poc/model"
 )
 
 type User struct {

@@ -10,10 +10,10 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.temporal.io/sdk/client"
 
-	"transaction-temporal-workflow/cmd"
-	"transaction-temporal-workflow/dependency"
-	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/usecase"
+	"temporalio-poc/cmd"
+	"temporalio-poc/dependency"
+	"temporalio-poc/model"
+	"temporalio-poc/usecase"
 )
 
 func main() {

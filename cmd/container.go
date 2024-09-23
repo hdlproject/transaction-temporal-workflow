@@ -3,13 +3,13 @@ package cmd
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	internalActivity "transaction-temporal-workflow/activity"
-	"transaction-temporal-workflow/dependency"
-	internalRepository "transaction-temporal-workflow/repository"
-	"transaction-temporal-workflow/usecase/idempotency"
-	"transaction-temporal-workflow/usecase/transaction"
-	"transaction-temporal-workflow/usecase/user"
-	internalWorkflow "transaction-temporal-workflow/workflow"
+	internalActivity "temporalio-poc/activity"
+	"temporalio-poc/dependency"
+	internalRepository "temporalio-poc/repository"
+	"temporalio-poc/usecase/idempotency"
+	"temporalio-poc/usecase/transaction"
+	"temporalio-poc/usecase/user"
+	internalWorkflow "temporalio-poc/workflow"
 )
 
 var (

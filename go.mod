@@ -1,4 +1,4 @@
-module transaction-temporal-workflow
+module temporalio-poc
 
 go 1.18
 

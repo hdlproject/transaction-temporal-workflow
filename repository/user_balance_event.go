@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/model"
+	"temporalio-poc/model"
 )
 
 func (i User) GetUnpublishedUserBalanceEvents() (userBalanceEvents []model.UserBalanceEvent, err error) {

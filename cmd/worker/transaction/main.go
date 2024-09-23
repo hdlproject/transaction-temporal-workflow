@@ -6,9 +6,9 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	"transaction-temporal-workflow/cmd"
-	"transaction-temporal-workflow/dependency"
-	"transaction-temporal-workflow/usecase"
+	"temporalio-poc/cmd"
+	"temporalio-poc/dependency"
+	"temporalio-poc/usecase"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"

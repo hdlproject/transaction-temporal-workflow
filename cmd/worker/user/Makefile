@@ -1,4 +1,4 @@
-APP_IMAGE_NAME := transaction-temporal-workflow/user-worker:latest
+APP_IMAGE_NAME := temporalio-poc/user-worker:latest
 APP_NAME := user-worker
 APP_DIR := cmd/worker/user
 APP_TYPE := worker

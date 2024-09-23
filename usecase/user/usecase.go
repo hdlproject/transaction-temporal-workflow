@@ -8,10 +8,10 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 
-	"transaction-temporal-workflow/model"
-	"transaction-temporal-workflow/repository"
-	"transaction-temporal-workflow/usecase"
-	"transaction-temporal-workflow/usecase/idempotency"
+	"temporalio-poc/model"
+	"temporalio-poc/repository"
+	"temporalio-poc/usecase"
+	"temporalio-poc/usecase/idempotency"
 )
 
 type (

@@ -3,7 +3,7 @@ package idempotency
 import (
 	"fmt"
 
-	"transaction-temporal-workflow/repository"
+	"temporalio-poc/repository"
 )
 
 type (

@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"transaction-temporal-workflow/api"
-	"transaction-temporal-workflow/cmd"
+	"temporalio-poc/api"
+	"temporalio-poc/cmd"
 )
 
 func main() {

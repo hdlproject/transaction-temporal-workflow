@@ -7,8 +7,8 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"go.temporal.io/sdk/workflow"
 
-	"transaction-temporal-workflow/activity"
-	"transaction-temporal-workflow/model"
+	"temporalio-poc/activity"
+	"temporalio-poc/model"
 )
 
 type (

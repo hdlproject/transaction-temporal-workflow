@@ -8,8 +8,8 @@ import (
 
 	"go.temporal.io/sdk/client"
 
-	"transaction-temporal-workflow/cmd"
-	"transaction-temporal-workflow/usecase"
+	"temporalio-poc/cmd"
+	"temporalio-poc/usecase"
 )
 
 func main() {
